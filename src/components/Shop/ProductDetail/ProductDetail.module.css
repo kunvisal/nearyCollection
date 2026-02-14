@@ -1,0 +1,128 @@
+/* Main Container */
+.container {
+    padding-bottom: 80px;
+    /* Space for sticky footer */
+}
+
+/* Gallery */
+.galleryContainer {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background-color: #f3f4f6;
+    position: relative;
+    overflow: hidden;
+}
+
+.galleryImage {
+    object-fit: cover;
+}
+
+/* Info Section */
+.infoSection {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 1.5rem 1.5rem 0 0;
+    margin-top: -1.5rem;
+    /* Overlap effect */
+    position: relative;
+    z-index: 10;
+}
+
+.priceRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ec4899;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+/* Option Groups (Variants) */
+.optionGroup {
+    margin-bottom: 1.5rem;
+}
+
+.optionTitle {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.optionList {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.optionPill {
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #4b5563;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.optionPill.selected {
+    border-color: #ec4899;
+    background-color: #fdf2f8;
+    color: #be185d;
+}
+
+.colorCircle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.colorCircle.selected {
+    border-color: #ec4899;
+    transform: scale(1.1);
+}
+
+/* Sticky Footer */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 28rem;
+    /* Match layouts max-w-md */
+    margin: 0 auto;
+    padding: 1rem;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 1rem;
+    z-index: 40;
+}
+
+.chatButton {
+    flex: 1;
+    background-color: #ec4899;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
