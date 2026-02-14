@@ -8,6 +8,18 @@ With TailAdmin Next.js, you get access to all the necessary dashboard UI compone
 
 TailAdmin utilizes the powerful features of **Next.js 16** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
 
+## Documentation
+
+<br />
+
+The full documentation for this project is located in the **[docs/](docs/)** directory.
+
+- **[📂 View Documentation Hub](docs/README.md)**
+- **[📝 Contributing Guide](CONTRIBUTING.md)**
+- **[📋 Project Requirements](docs/specs/women-clothing-shop-srs.md)**
+
+<br />
+
 ## Overview
 
 TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:

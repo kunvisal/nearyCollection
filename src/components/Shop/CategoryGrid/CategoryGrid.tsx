@@ -14,6 +14,10 @@ const categories = [
     { id: 6, name: "Outer", icon: "🧥", slug: "outerwear" },
     { id: 7, name: "Shoes", icon: "👠", slug: "shoes" },
     { id: 8, name: "Sale", icon: "🔥", slug: "sale" },
+    { id: 9, name: "Bags", icon: "👜", slug: "bags" },
+    { id: 10, name: "Accessories", icon: "💍", slug: "accessories" },
+    { id: 11, name: "New", icon: "🆕", slug: "new-arrivals" },
+    { id: 12, name: "Best Sellers", icon: "⭐", slug: "best-sellers" },
 ];
 
 export default function CategoryGrid() {

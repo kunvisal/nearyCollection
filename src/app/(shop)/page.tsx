@@ -33,7 +33,7 @@ export default function ShopHome() {
                     </div>
                 </header>
 
-                <Hero title="New Collection" subtitle="Summer 2026" />
+                <Hero title="" subtitle="" />
 
                 <CategoryGrid />
 
