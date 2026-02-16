@@ -71,7 +71,41 @@
 }
 
 .price {
-    font-size: 0.875rem;
     font-weight: 700;
     color: #000;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .rowContainer {
+        margin-bottom: 3rem;
+    }
+
+    .scrollContainer {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        overflow-x: visible;
+        padding-bottom: 0;
+        scroll-snap-type: none;
+    }
+
+    .productCard {
+        width: auto;
+        flex: none;
+        scroll-snap-align: none;
+    }
+
+    .imageWrapper {
+        aspect-ratio: 3/4;
+        margin-bottom: 0.75rem;
+    }
+
+    .productName {
+        font-size: 1rem;
+    }
+
+    .price {
+        font-size: 1rem;
+    }
 }

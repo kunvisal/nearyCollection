@@ -10,7 +10,7 @@ export default function ShopHome() {
 
     return (
         <div className="pb-10">
-            <div className="p-4">
+            <div className="p-1">
                 {/* Header Removed */}
 
                 <Hero

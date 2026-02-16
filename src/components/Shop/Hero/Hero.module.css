@@ -1,10 +1,13 @@
 .container {
     width: 100%;
     background-color: white;
-    border-radius: 0.5rem;
+    border-radius: 0;
+    /* Remove border radius if desired for flat look, or keep small */
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    box-shadow: none;
+    /* Remove box-shadow */
+    margin-bottom: 0.5rem;
+    /* Reduce gap */
 }
 
 .coverContainer {
@@ -22,7 +25,7 @@
 
 
 .profileSection {
-    padding: 0 1rem 1.5rem;
+    padding: 0 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -117,7 +120,7 @@
 .actions {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.6rem;
     width: 100%;
     justify-content: center;
     /* Center align buttons */
@@ -208,79 +211,141 @@
     height: 100%;
 }
 
-.socialIcn:active {
-    transform: translateY(-1px) scale(1.05);
+
+/* Contact Info Section */
+.contactSection {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e5e7eb;
 }
 
-.socialIcn svg {
-    width: 1.5rem;
-    height: 1.5rem;
+.contactTitle {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
 }
 
-@media (min-width: 640px) {
+.socialList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.2s;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    margin: 0 -0.5rem;
+    /* Negative margin to align with text */
+}
+
+.contactItem:hover {
+    background-color: #f3f4f6;
+}
+
+.iconCircle {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: #f3f4f6;
+    /* Gray background for icon */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #374151;
+    flex-shrink: 0;
+}
+
+.contactItem:hover .iconCircle {
+    background-color: #e5e7eb;
+}
+
+.contactText {
+    display: flex;
+    flex-direction: column;
+}
+
+.contactLabel {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #111827;
+    word-break: break-word;
+}
+
+.contactType {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+@media (min-width: 768px) {
+    .container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .coverContainer {
+        aspect-ratio: 4 / 1;
+        min-height: 250px;
+    }
+
     .profileSection {
-        /* Keep column layout for consistent stacking: Header -> Subtitle -> Actions */
+        padding: 0 2rem 2rem;
         align-items: flex-start;
-        padding-left: 2rem;
-        padding-right: 2rem;
+    }
+
+    .profileHeader {
+        margin-top: 0.5rem;
     }
 
     .avatarContainer {
-        margin-top: -2rem;
-        margin-right: 1rem;
-        margin-bottom: 0;
+        margin-top: -4rem;
+        width: 10rem;
+        height: 10rem;
     }
 
     .avatarWrapper {
-        width: 8rem;
-        height: 8rem;
+        width: 10rem;
+        height: 10rem;
         border-width: 5px;
     }
 
     .onlineIndicator {
-        width: 1.75rem;
-        height: 1.75rem;
-        bottom: 0.5rem;
-        right: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        bottom: 1rem;
+        right: 1rem;
         border-width: 4px;
     }
 
-    /* .info removed */
+    .title {
+        font-size: 2rem;
+        margin-top: 1rem;
+    }
 
     .subtitle {
-        /* Ensure subtitle aligns nicely on desktop too */
-        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        max-width: 600px;
     }
 
     .actions {
-        /* width: auto; Removed to allow full width inheritance */
-        margin-bottom: 0.75rem;
-        width: 100%;
-        max-width: 500px;
-        /* Constrain slightly for aesthetics on huge screens */
+        justify-content: flex-start;
+        max-width: none;
     }
 
     .actionBtn {
-        min-width: 130px;
+        flex: 0 1 auto;
+        min-width: 150px;
     }
 
     .socialRow {
-        width: 100%;
-        max-width: none;
         justify-content: flex-start;
-        /* Keep left on desktop to align with info? Or user meant center always? User said "keep previouse align center". Previous desktop was left. */
-        /* But user might be looking at mobile. */
-        /* I will default to previous behavior: Step 31 had center on mobile, left on desktop (with padding). */
-        /* Step 54 changed it to left on mobile AND desktop. */
-        /* User says "keep previouse align center". This implies revert to Center (Mobile) / Left (Desktop) OR Center Always. */
-        /* "Align center too" usually means they want it centered. */
-        /* I will set justifying-content: center for mobile (default above). */
-        /* For desktop, I'll revert to the Step 31 style which was nice: aligned with text. */
-        /* BUT, if I just remove the overrides here, it will inherit 'center' from above. */
-        /* Let's try centering on desktop too, as that seems to be the explicit request ("align center too"). */
-        justify-content: center;
-        padding-left: 0;
-        border-top: none;
-        margin-top: 1rem;
+        padding-top: 1.5rem;
     }
 }

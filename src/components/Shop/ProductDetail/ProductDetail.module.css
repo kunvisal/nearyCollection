@@ -126,3 +126,65 @@
     justify-content: center;
     gap: 0.5rem;
 }
+
+/* Desktop Responsiveness */
+@media (min-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        height: auto;
+    }
+
+    .galleryContainer {
+        aspect-ratio: 3/4;
+        border-radius: 1.5rem;
+        position: sticky;
+        top: 2rem;
+        height: fit-content;
+    }
+
+    .infoSection {
+        margin-top: 0;
+        border-radius: 0;
+        padding: 1rem 0;
+    }
+
+    .title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .footer {
+        display: none;
+    }
+}
+
+.desktopButton {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .desktopButton {
+        display: flex;
+        width: 100%;
+        background-color: #ec4899;
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+
+    .desktopButton:hover {
+        background-color: #db2777;
+    }
+}
