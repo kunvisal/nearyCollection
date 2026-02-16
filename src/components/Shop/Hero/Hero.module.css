@@ -1,75 +1,286 @@
-.heroContainer {
+.container {
+    width: 100%;
+    background-color: white;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.coverContainer {
     position: relative;
     width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    /* Standard banner ratio */
-    overflow: hidden;
-    border-radius: 1rem;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    aspect-ratio: 2.5 / 1;
+    /* More strict banner ratio */
+    min-height: 150px;
+    background-color: #f3f4f6;
 }
 
-.image {
-    width: 100%;
-    height: 100%;
+.coverImage {
     object-fit: cover;
-    transition: transform 0.5s ease;
 }
 
-.heroContent {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 1.5rem;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
-    color: white;
-    z-index: 10;
+
+.profileSection {
+    padding: 0 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /* Left align everything */
+    position: relative;
+    text-align: left;
 }
+
+.profileHeader {
+    display: flex;
+    align-items: top;
+    justify-content: start;
+    /* Align center explicitly */
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-top: 0.5rem;
+}
+
+.avatarContainer {
+    margin-top: -3rem;
+    /* Negative margin to overlap cover */
+    margin-bottom: 0;
+    /* Remove bottom margin */
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+    /* Don't shrink avatar */
+    width: 6rem;
+    /* Explicit width for container */
+    height: 6rem;
+    /* Explicit height to match wrapper */
+}
+
+.avatarWrapper {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    border: 3px solid white;
+    /* Inner Gap */
+    overflow: hidden;
+    position: relative;
+    background-color: white;
+    box-shadow: 0 0 0 2px #0866FF;
+    /* Blue Story Ring */
+}
+
+.avatar {
+    object-fit: cover;
+}
+
+.onlineIndicator {
+    position: absolute;
+    bottom: 0.25rem;
+    right: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: #31a24c;
+    /* Facebook Online Green */
+    border: 3px solid white;
+    border-radius: 50%;
+    z-index: 20;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Removed .info */
 
 .title {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    margin-bottom: 0.25rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #111827;
+    margin-bottom: 0;
+    line-height: 1;
+    margin-top: 0;
+    padding-top: 5px;
+    /* Push down to visually center with the overlap avatar */
 }
 
 .subtitle {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    color: #6b7280;
     font-weight: 500;
-    opacity: 0.9;
-    margin-bottom: 1rem;
+    text-align: left;
+    width: 100%;
+    display: block;
+    margin-bottom: 0.4rem;
+    padding: 0rem 0.5rem 0.5rem;
+    /* Padding top/bottom and left alignment spacing */
 }
 
-.socialContainer {
+.actions {
     display: flex;
     gap: 0.75rem;
-    align-items: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    justify-content: center;
+    /* Center align buttons */
 }
 
-.socialBtn {
+.actionBtn {
     display: flex;
     align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    flex: 1;
     justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 50%;
-    color: #374151;
-    /* Gray 700 */
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    text-decoration: none;
+    min-width: 120px;
 }
 
-.socialBtn:hover {
-    transform: translateY(-3px) scale(1.1);
+.primaryBtn {
+    background-color: #006AFF;
+    /* Messenger Blue */
     color: white;
-    background-color: var(--hover-color);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
 }
 
-.socialBtn svg {
-    width: 1.25rem;
-    height: 1.25rem;
+.primaryBtn:hover {
+    background-color: #0056ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.secondaryBtn {
+    background-color: #E4E6EB;
+    color: #050505;
+}
+
+.secondaryBtn:hover {
+    background-color: #d1d5db;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.socialRow {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    /* Center align icons */
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    width: 100%;
+    max-width: 100%;
+}
+
+.socialIcn {
+    color: #4b5563;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy transition */
+    padding: 0.5rem;
+    border-radius: 50%;
+    background-color: #f9fafb;
+    position: relative;
+    overflow: hidden;
+}
+
+.socialIcn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.socialIcn:hover {
+    color: var(--hover-color);
+    transform: translateY(-3px) scale(1.15);
+    /* Enhanced interaction */
+    background-color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.socialIcn:hover::after {
+    width: 100%;
+    height: 100%;
+}
+
+.socialIcn:active {
+    transform: translateY(-1px) scale(1.05);
+}
+
+.socialIcn svg {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .profileSection {
+        /* Keep column layout for consistent stacking: Header -> Subtitle -> Actions */
+        align-items: flex-start;
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    .avatarContainer {
+        margin-top: -2rem;
+        margin-right: 1rem;
+        margin-bottom: 0;
+    }
+
+    .avatarWrapper {
+        width: 8rem;
+        height: 8rem;
+        border-width: 5px;
+    }
+
+    .onlineIndicator {
+        width: 1.75rem;
+        height: 1.75rem;
+        bottom: 0.5rem;
+        right: 0.5rem;
+        border-width: 4px;
+    }
+
+    /* .info removed */
+
+    .subtitle {
+        /* Ensure subtitle aligns nicely on desktop too */
+        margin-bottom: 1rem;
+    }
+
+    .actions {
+        /* width: auto; Removed to allow full width inheritance */
+        margin-bottom: 0.75rem;
+        width: 100%;
+        max-width: 500px;
+        /* Constrain slightly for aesthetics on huge screens */
+    }
+
+    .actionBtn {
+        min-width: 130px;
+    }
+
+    .socialRow {
+        width: 100%;
+        max-width: none;
+        justify-content: flex-start;
+        /* Keep left on desktop to align with info? Or user meant center always? User said "keep previouse align center". Previous desktop was left. */
+        /* But user might be looking at mobile. */
+        /* I will default to previous behavior: Step 31 had center on mobile, left on desktop (with padding). */
+        /* Step 54 changed it to left on mobile AND desktop. */
+        /* User says "keep previouse align center". This implies revert to Center (Mobile) / Left (Desktop) OR Center Always. */
+        /* "Align center too" usually means they want it centered. */
+        /* I will set justifying-content: center for mobile (default above). */
+        /* For desktop, I'll revert to the Step 31 style which was nice: aligned with text. */
+        /* BUT, if I just remove the overrides here, it will inherit 'center' from above. */
+        /* Let's try centering on desktop too, as that seems to be the explicit request ("align center too"). */
+        justify-content: center;
+        padding-left: 0;
+        border-top: none;
+        margin-top: 1rem;
+    }
 }
