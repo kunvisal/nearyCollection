@@ -3,45 +3,37 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./CategoryGrid.module.css";
-import {
-    GridIcon,
-    PageIcon,
-    FileIcon,
-    DocsIcon,
-    CopyIcon,
-    BoxIcon,
-    BoxIconLine,
-    BoxCubeIcon,
-    DollarLineIcon,
-    PlugInIcon,
-    BoltIcon,
-    ShootingStarIcon
-} from "../../../icons";
+import { GridIcon } from "../../../icons"; // Import at least one icon for default
 
-// Mock Categories
-const categories = [
-    { id: 0, name: "All", icon: <GridIcon />, slug: "all" },
-    { id: 1, name: "Dresses", icon: <PageIcon />, slug: "dresses" },
-    { id: 2, name: "Tops", icon: <FileIcon />, slug: "tops" },
-    { id: 3, name: "Pants", icon: <DocsIcon />, slug: "pants" },
-    { id: 4, name: "Skirts", icon: <CopyIcon />, slug: "skirts" },
-    { id: 5, name: "Sets", icon: <BoxIcon />, slug: "sets" },
-    { id: 6, name: "Outer", icon: <BoxIconLine />, slug: "outerwear" },
-    { id: 7, name: "Shoes", icon: <BoxCubeIcon />, slug: "shoes" },
-    { id: 8, name: "Sale", icon: <DollarLineIcon />, slug: "sale" },
-    { id: 9, name: "Bags", icon: <BoxIcon />, slug: "bags" },
-    { id: 10, name: "Accessories", icon: <PlugInIcon />, slug: "accessories" },
-    { id: 11, name: "New", icon: <BoltIcon />, slug: "new-arrivals" },
-    { id: 12, name: "Best Sellers", icon: <ShootingStarIcon />, slug: "best-sellers" },
-];
+interface CategoryItem {
+    id: number;
+    nameEn?: string | null;
+    nameKm: string;
+    [key: string]: any;
+}
 
-export default function CategoryGrid() {
+interface CategoryGridProps {
+    categories?: CategoryItem[];
+}
+
+export default function CategoryGrid({ categories = [] }: CategoryGridProps) {
+    // Prepend 'All' category
+    const displayCategories = [
+        { id: 0, name: "All", icon: <GridIcon />, slug: "all" },
+        ...categories.map(cat => ({
+            id: cat.id,
+            name: cat.nameEn || cat.nameKm,
+            icon: <GridIcon />, // We can customize icons later based on category name
+            slug: cat.id.toString(), // Use ID as slug for now, or add slug field
+        }))
+    ];
+
     return (
         <div className={styles.gridContainer}>
-            {categories.map((cat) => (
+            {displayCategories.map((cat) => (
                 <Link
-                    href={cat.slug === 'all' ? '/' : `/category/${cat.slug}`}
-                    key={cat.id}
+                    href={cat.slug === 'all' ? '/' : `/category/${cat.id}`}
+                    key={`cat-${cat.id}`}
                     className={`${styles.categoryItem} ${cat.slug === 'all' ? styles.active : ''}`}
                 >
                     <span className={styles.icon}>{cat.icon}</span>

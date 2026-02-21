@@ -1,0 +1,9 @@
+﻿Admin user initialized successfully: {
+  id: '9dd98a22-a2a0-43fd-8f69-c78e995cd1b2',
+  username: 'admin',
+  passwordHash: 'password',
+  fullName: 'System Admin',
+  role: 'ADMIN',
+  isActive: true,
+  createdAt: 2026-02-21T10:51:55.964Z
+}

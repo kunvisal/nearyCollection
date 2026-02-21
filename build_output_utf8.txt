@@ -1,0 +1,118 @@
+﻿
+> free-nextjs-admin-dashboard@2.2.2 build
+> next build
+
+node.exe : [baseline-browser-mapping] The data in this 
+module is over two months old.  To ensure accurate 
+Baseline data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Lenovo\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseline-bro 
+   ws...ping@latest -D`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+ Γ£ô Compiled successfully in 8.7s
+   Running TypeScript ...
+   Collecting page data using 15 workers ...
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+   Generating static pages using 15 workers (0/30) ...
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+ Γ¿» useSearchParams() should be wrapped in a suspense 
+boundary at page "/checkout/payment". Read more: https://ne
+xtjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at S (D:\NearyCollection\free-nextjs-admin-dashboard-ma
+in\.next\server\chunks\ssr\node_modules_next_15323350._.js:
+2:2111)
+    at p (D:\NearyCollection\free-nextjs-admin-dashboard-ma
+in\.next\server\chunks\ssr\node_modules_next_15323350._.js:
+4:4847)
+    at l (D:\NearyCollection\free-nextjs-admin-dashboard-ma
+in\.next\server\chunks\ssr\_f6ebff7a._.js:1:1966)
+    at ar (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:84366)
+    at aa (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:86185)
+    at as (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:107952)
+    at ao (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:105374)
+    at an (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:84718)
+    at aa (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:86234)
+    at aa (D:\NearyCollection\free-nextjs-admin-dashboard-m
+ain\node_modules\next\dist\compiled\next-server\app-page-tu
+rbo.runtime.prod.js:2:104714)
+Error occurred prerendering page "/checkout/payment". Read 
+more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on 
+/(shop)/checkout/payment/page: /checkout/payment, exiting 
+the build.
+ Γ¿» Next.js build worker exited with code: 1 and signal: 
+null

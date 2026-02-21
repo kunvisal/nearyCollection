@@ -30,8 +30,12 @@ const UserIcon = () => (
     </svg>
 );
 
+import { useCartStore } from "@/lib/store/cartStore";
+
 export default function BottomNav() {
     const pathname = usePathname();
+    const { setIsDrawerOpen, getCartCount } = useCartStore();
+    const cartCount = getCartCount();
 
     const isActive = (path: string) => pathname === path;
 
@@ -45,10 +49,20 @@ export default function BottomNav() {
                 <SearchIcon />
                 <span>Search</span>
             </Link>
-            <Link href="/cart" className={`${styles.navItem} ${isActive("/cart") ? styles.active : ""}`}>
-                <BagIcon />
+            <button
+                onClick={() => setIsDrawerOpen(true)}
+                className={`${styles.navItem} relative`}
+            >
+                <div className="relative">
+                    <BagIcon />
+                    {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center border-2 border-white dark:border-gray-900">
+                            {cartCount}
+                        </span>
+                    )}
+                </div>
                 <span>Cart</span>
-            </Link>
+            </button>
             <Link href="/profile" className={`${styles.navItem} ${isActive("/profile") ? styles.active : ""}`}>
                 <UserIcon />
                 <span>Profile</span>

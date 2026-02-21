@@ -5,6 +5,7 @@ Welcome to the documentation hub for the **Neary Collection - Women Clothing Sho
 ## 🗂️ Structure
 
 - **[📂 Specs & Requirements](specs/)**
+    - [Project Context](project-context.md): Goals, tech stack, architecture principles, and AI agent instructions.
     - [SRS (Software Requirements Specification)](specs/women-clothing-shop-srs.md): Detailed business rules, user stories, and feature lists.
 
 - **[🏗️ Architecture](architecture/)**

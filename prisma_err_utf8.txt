@@ -1,0 +1,70 @@
+﻿node.exe : Loaded Prisma config from prisma.config.ts.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Lenovo\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Loaded Prisma c...isma.co 
+   nfig.ts.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Prisma schema loaded from prisma\schema.prisma.
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:215
+   | 
+214 | enum TransactionType {
+215 |   IN = 'IN',
+216 |   OUT = 'OUT',
+   | 
+
+
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:216
+   | 
+215 |   IN = 'IN',
+216 |   OUT = 'OUT',
+217 |   ADJUST = 'ADJUST',
+   | 
+
+
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:217
+   | 
+216 |   OUT = 'OUT',
+217 |   ADJUST = 'ADJUST',
+218 |   RESERVE = 'RESERVE',
+   | 
+
+
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:218
+   | 
+217 |   ADJUST = 'ADJUST',
+218 |   RESERVE = 'RESERVE',
+219 |   RELEASE = 'RELEASE',
+   | 
+
+
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:219
+   | 
+218 |   RESERVE = 'RESERVE',
+219 |   RELEASE = 'RELEASE',
+220 |   DEDUCT = 'DEDUCT',
+   | 
+
+
+error: Error validating: This line is not an enum value definition.
+  -->  prisma\schema.prisma:220
+   | 
+219 |   RELEASE = 'RELEASE',
+220 |   DEDUCT = 'DEDUCT',
+221 | }
+   | 
+
+Validation Error Count: 6
+[Context: getConfig]
+
+Prisma CLI Version : 7.4.1

@@ -1,0 +1,67 @@
+﻿
+> free-nextjs-admin-dashboard@2.2.2 build
+> next build
+
+node.exe : [baseline-browser-mapping] The data in this 
+module is over two months old.  To ensure accurate 
+Baseline data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Lenovo\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseline-bro 
+   ws...ping@latest -D`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please 
+update: `npm i baseline-browser-mapping@latest -D`
+ Γ£ô Compiled successfully in 8.7s
+   Running TypeScript ...
+Failed to compile.
+
+.next/types/validator.ts:360:31
+Type error: Type 'typeof import("D:/NearyCollection/free-ne
+xtjs-admin-dashboard-main/src/app/api/admin/orders/[id]/pay
+ment/route")' does not satisfy the constraint 
+'RouteHandlerConfig<"/api/admin/orders/[id]/payment">'.
+  Types of property 'PUT' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: 
+string; }; }) => Promise<NextResponse<{ data: { id: 
+string; createdAt: Date; note: string | null; orderCode: 
+string; deliveryZone: DeliveryZone; ... 7 more ...; 
+customerId: string; }; success: boolean; }> | 
+NextResponse<...>>' is not assignable to type '(request: 
+NextRequest, context: { params: Promise<{ id: string; }>; 
+}) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are 
+incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is 
+not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ 
+id: string; }>' but required in type '{ id: string; }'.
+
+[0m [90m 358 |[39m   type 
+__IsExpected[33m<[39m[33mSpecific[39m 
+[36mextends[39m [33mRouteHandlerConfig[39m[33m<[39m[
+32m"/api/admin/orders/[id]/payment"[39m[33m>>[39m 
+[33m=[39m [33mSpecific[39m
+ [90m 359 |[39m   [36mconst[39m handler [33m=[39m {} 
+[36mas[39m [36mtypeof[39m [36mimport[39m([32m"../../
+src/app/api/admin/orders/[id]/payment/route.js"[39m)
+[31m[1m>[22m[39m[90m 360 |[39m   type __Check 
+[33m=[39m __IsExpected[33m<[39m[36mtypeof[39m 
+handler[33m>[39m
+ [90m     |[39m                               
+[31m[1m^[22m[39m
+ [90m 361 |[39m   [90m// @ts-ignore[39m
+ [90m 362 |[39m   type __Unused [33m=[39m __Check
+ [90m 363 |[39m }[0m
+Next.js build worker exited with code: 1 and signal: null

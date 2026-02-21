@@ -1,14 +1,18 @@
 import ProductDetail from "@/components/Shop/ProductDetail/ProductDetail";
-import { mockProducts } from "@/data/mockData";
+import { ProductService } from "@/lib/services/productService";
 import React from "react";
 import { notFound } from "next/navigation";
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-    const product = mockProducts.find((p) => p.id === Number(params.id));
+export default async function ProductPage({ params }: { params: { id: string } }) {
+    try {
+        const product = await ProductService.getProductById(params.id);
 
-    if (!product) {
+        if (!product || !product.isActive) {
+            notFound();
+        }
+
+        return <ProductDetail product={product as any} />;
+    } catch (error) {
         notFound();
     }
-
-    return <ProductDetail product={product} />;
 }

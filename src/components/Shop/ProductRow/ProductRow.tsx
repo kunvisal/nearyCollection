@@ -5,12 +5,20 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./ProductRow.module.css";
 
-import { mockProducts, Product } from "@/data/mockData";
+import { mockProducts } from "@/data/mockData";
+
+interface MappedProduct {
+    id: any;
+    name: any;
+    price: number;
+    image: any;
+    [key: string]: any;
+}
 
 interface ProductRowProps {
     title: string;
     seeAllLink?: string;
-    products?: Product[];
+    products?: MappedProduct[];
 }
 
 export default function ProductRow({ title, seeAllLink = "/products", products = mockProducts }: ProductRowProps) {

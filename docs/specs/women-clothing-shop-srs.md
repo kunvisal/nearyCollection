@@ -118,7 +118,7 @@
 
 * Display home sections: new arrivals, best sellers, promotions
 * Category listing
-* Search and filters: category, price range, size, color, in-stock
+* Able to use can scroll to load more products experience like instagram or facebook tiktok
 
 ### FR-02 Product Detail
 

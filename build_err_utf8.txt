@@ -1,0 +1,50 @@
+﻿
+> free-nextjs-admin-dashboard@2.2.2 build
+> next build
+
+node.exe : [baseline-browser-mapping] The data in this module is over 
+two months old.  To ensure accurate Baseline data, please update: `npm 
+i baseline-browser-mapping@latest -D`
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Users\Lenovo\AppData\Roaming ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseline-brows...ping@la 
+   test -D`:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module is over two months 
+old.  To ensure accurate Baseline data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+ Γ£ô Compiled successfully in 8.7s
+   Running TypeScript ...
+Failed to compile.
+
+./src/app/admin/inventory/page.tsx:53:63
+Type error: Property 'ProductVariantAttributeValue' does not exist on 
+type '{ id: string; isActive: boolean; productId: string; size: 
+string; color: string; sku: string; barcode: string | null; costPrice: 
+Decimal; salePrice: Decimal; discountAmount: Decimal; stockOnHand: 
+number; reservedQty: number; lowStockThreshold: number; }'.
+
+[0m [90m 51 |[39m                         
+[33m<[39m[33mTableBody[39m className[33m=[39m[32m"divide-y 
+divide-gray-100 dark:divide-gray-800"[39m[33m>[39m
+ [90m 52 |[39m                             
+{lowStockVariants[33m.[39mmap((variant) [33m=>[39m {
+[31m[1m>[22m[39m[90m 53 |[39m                                 
+[36mconst[39m attributesStr [33m=[39m 
+variant[33m.[39m[33mProductVariantAttributeValue[39m[33m.[39mmap(
+ [90m    |[39m                                                       
+        [31m[1m^[22m[39m
+ [90m 54 |[39m                                     (v) [33m=>[39m 
+[32m`${v.attributeValue.attribute.name}: 
+${v.attributeValue.value}`[39m
+ [90m 55 |[39m                                 
+)[33m.[39mjoin([32m", "[39m)[33m;[39m
+ [90m 56 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null
