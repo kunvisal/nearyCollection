@@ -208,8 +208,8 @@ export default function ProductsPage() {
             </div>
 
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                                 {editingProduct ? "Edit Product" : "Add Product"}

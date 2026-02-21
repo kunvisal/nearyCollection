@@ -51,30 +51,48 @@ Follow these flows sequentially to verify that all systems are working perfectly
    - Copy the generated `Order Code`. 
    - **Verify Telegram:** Check your Telegram app. You should have instantly received a "🎉 New Order Received!" notification with the order details.
 
-## Flow 4: Order Verification & Fulfillment (Admin Panel)
+## Flow 4: Point of Sale (POS) Order Creation (Admin Panel)
 
-*Objective: Act as the admin to approve the payment and complete the delivery lifecycle.*
+*Objective: Test the staff's ability to create an order directly from the Admin Panel.*
 
-1. **View Orders:** Go to Orders (`/admin/orders`):
-   - You should see the newly placed order with a status of `NEW` and payment status `UNPAID` (or `PENDING_VERIFICATION` if a slip was uploaded).
-2. **View Order Details:**
-   - Click the **View** button for that order.
-   - Review the customer information and purchased items.
-3. **Update Statuses:**
-   - **Payment Verification:** If you are testing a bank transfer, change the Payment Status to `PAID` once verified.
-   - **Order Lifecycle:** Change the Order Status from `NEW` &rarr; `PROCESSING` &rarr; `SHIPPED` &rarr; `DELIVERED`. 
-   - *Behind the scenes, changing these statuses correctly deducts and manages the stock logic inside the database.*
+1. **Access POS Interface:** Go to POS (`/admin/pos`).
+2. **Search and Add to Cart:**
+   - Search for "Elegant Summer Dress".
+   - Click on the product and select the variant created in Flow 2.
+   - Adjust the quantity.
+3. **Checkout:**
+   - Fill in the customer details and delivery zone.
+   - Click **Place Order & Auto-Confirm**.
+4. **Order Confirmation:**
+   - Verify the order is created successfully and the cart is cleared.
+   - Verify Telegram notification is received for the POS order.
 
-## Flow 5: Analytics & Inventory Monitoring (Admin Panel)
+## Flow 5: Accelerated Order Fulfillment (Admin Panel)
+
+*Objective: Test the dedicated packaging and delivery workflows for processing orders.*
+
+1. **Order Packaging:** Go to Packaging (`/admin/packaging`):
+   - Navigate to the Orders overview first (`/admin/orders`) and change the status of the Storefront order from Flow 3 to `PROCESSING` to simulate admin approval. POS orders are created as `NEW` as well, so mark the POS order to `PROCESSING` too.
+   - Go back to Packaging (`/admin/packaging`). You should see both `PROCESSING` orders.
+   - Click the **Telegram** or **Phone** buttons to test the customer contact links.
+   - Click **Confirm Packaging** to move the orders to `PACKED`. They will disappear from this view.
+2. **Move to Shipped:**
+   - Go to Orders (`/admin/orders`) or Order Details and change the statuses from `PACKED` to `SHIPPED` (simulating handing it over to the delivery service).
+3. **Order Delivery:** Go to Delivery (`/admin/delivery`):
+   - You should see the orders that are now `SHIPPED`.
+   - Click **Delivered** to mark an order as successfully delivered. The status will update to `DELIVERED`.
+   - Alternatively, test a failed delivery by clicking **Failed / Return** on another order to cancel it and return stock to the system.
+
+## Flow 6: Analytics & Inventory Monitoring (Admin Panel)
 
 *Objective: Verify that the dashboard metrics and inventory alerts update exactly as expected after a sale.*
 
 1. **Check Dashboard Metrics:** Go to the Admin Dashboard (`/admin`):
-   - **Verify** that your "Total Orders" and "Total Revenue" numeric cards have increased based on the order you just processed in Flow 4.
-   - **Verify** the new order appears in the "Recent Orders" table.
+   - **Verify** that your "Total Orders" and "Total Revenue" numeric cards have increased based on the orders you just processed in the previous flows.
+   - **Verify** the newer orders appear in the "Recent Orders" table.
 2. **Check Inventory Alerts:** Go to Inventory Alerts (`/admin/inventory`):
    - You should now see the "Elegant Summer Dress" listed in the **Low Stock Variants** table (because we initially set it to 5, and the purchase deducted the stock further, bringing it below the alert threshold).
-   - Look at the **Recent Inventory Movements** table. You should see a detailed transaction log indicating that `1` item was `DEDUCT`-ed due to the order fulfillment!
+   - Look at the **Recent Inventory Movements** table. You should see a detailed transaction log indicating that items were `DEDUCT`-ed due to the order fulfillment!
 
 ---
 

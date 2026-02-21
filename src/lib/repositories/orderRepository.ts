@@ -166,7 +166,22 @@ export class OrderRepository {
                 skip,
                 take,
                 orderBy: { createdAt: 'desc' },
-                include: { customer: true },
+                include: {
+                    customer: true,
+                    items: {
+                        include: {
+                            variant: {
+                                include: {
+                                    product: {
+                                        include: {
+                                            images: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
             }),
             prisma.order.count({ where }),
         ]);

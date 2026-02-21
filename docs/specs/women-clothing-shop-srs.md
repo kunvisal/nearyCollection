@@ -50,7 +50,8 @@
 
 ### Staff
 
-* Manage orders (pack/ship/deliver/cancel)
+* Create POS orders directly
+* Manage orders (pack/ship/deliver/cancel) using dedicated Packaging and Delivery workflows
 * Verify payment slips
 * Print receipt + label
 * Stock operations limited (as configured)
@@ -182,6 +183,25 @@
 
 * Configure bot token/chat id
 * Send new order notification with order summary
+
+### FR-12 POS Order Creation (Admin/Staff)
+
+* Easy-to-use POS-style interface to select products and variants quickly.
+* Input for customer details (Name, Phone, Address, Delivery Zone, etc.).
+* Print invoice/receipt and shipping label upon order completion.
+* Auto-creates the order into the system.
+
+### FR-13 Order Packaging Workflow
+
+* Dedicated view for orders that need packaging.
+* Displays all necessary order items and customer information.
+* Quick-contact buttons (call/message customer).
+* "Confirm Packaging" button to update the status to packed/ready for shipment.
+
+### FR-14 Order Delivery Workflow
+
+* Dedicated view for orders out for delivery.
+* Simple action buttons to mark the delivery as "Successful" or "Failed".
 
 ---
 
@@ -541,6 +561,9 @@
 
 * Login
 * Dashboard
+* POS (Create Order)
+* Packing Workflow
+* Delivery Workflow
 * Products
 * Variants/Stock
 * Orders list/detail

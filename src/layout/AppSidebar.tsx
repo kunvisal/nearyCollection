@@ -33,6 +33,21 @@ const navItems: NavItem[] = [
     path: "/admin",
   },
   {
+    icon: <PageIcon />,
+    name: "POS",
+    path: "/admin/pos",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Packaging",
+    path: "/admin/packaging",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Delivery",
+    path: "/admin/delivery",
+  },
+  {
     icon: <CalenderIcon />, // Using existing icon or change later
     name: "Orders",
     path: "/admin/orders",
