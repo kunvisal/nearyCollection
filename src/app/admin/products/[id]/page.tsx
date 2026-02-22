@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Plus, Edit2, Trash2, ArrowLeft, Upload, Image as ImageIcon, History, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/context/ToastContext";
+import imageCompression from 'browser-image-compression';
 
 type Variant = {
     id: string;
@@ -83,17 +84,25 @@ export default function ManageProductPage() {
 
         setIsUploading(true);
         try {
-            // 1. Upload to Supabase Storage
-            const fileExt = file.name.split('.').pop();
+            // 1. Compress Image
+            const options = {
+                maxSizeMB: 0.5,          // Target max size 500KB
+                maxWidthOrHeight: 1080,  // Good quality display size
+                useWebWorker: true
+            };
+            const compressedFile = await imageCompression(file, options);
+
+            // 2. Upload to Supabase Storage
+            const fileExt = compressedFile.name.split('.').pop() || 'jpg';
             const fileName = `${productId}/${Math.random().toString(36).substring(2)}.${fileExt}`;
 
             const { data, error } = await supabase.storage
                 .from('products')
-                .upload(fileName, file);
+                .upload(fileName, compressedFile);
 
             if (error) throw error;
 
-            // 2. Get Public URL
+            // 3. Get Public URL
             const { data: { publicUrl } } = supabase.storage
                 .from('products')
                 .getPublicUrl(fileName);

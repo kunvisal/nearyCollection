@@ -53,15 +53,19 @@ Follow these flows sequentially to verify that all systems are working perfectly
 
 ## Flow 4: Point of Sale (POS) Order Creation (Admin Panel)
 
-*Objective: Test the staff's ability to create an order directly from the Admin Panel.*
+*Objective: Test the staff's ability to create an order directly from the Admin Panel using the new App-Like Mobile UI.*
 
-1. **Access POS Interface:** Go to POS (`/admin/pos`).
+1. **Access POS Interface:** Go to POS (`/admin/pos`) and simulate a mobile viewport if on desktop.
 2. **Search and Add to Cart:**
-   - Search for "Elegant Summer Dress".
-   - Click on the product and select the variant created in Flow 2.
-   - Adjust the quantity.
-3. **Checkout:**
-   - Fill in the customer details and delivery zone.
+   - Use the horizontal scrollable category tabs to find "Elegant Summer Dress" or use the top Search Bar.
+   - Click the floating `+` button on the product card's image to open variant selection.
+   - Select the variant created in Flow 2 and click Add. 
+   - Verify a quantity badge appears on the product image.
+3. **Checkout via Cart Drawer:**
+   - Tap the **Sticky Bottom Cart Bar** containing your total price and item count.
+   - A Cart Drawer will slide up. Review your items, subtotal, and delivery fees.
+   - Click **Review payment and address** (Checkout button).
+   - Fill in the customer details and delivery zone in the checkout modal.
    - Click **Place Order & Auto-Confirm**.
 4. **Order Confirmation:**
    - **Verify Status & State:** The cart should clear. The order status is automatically set to `PROCESSING`. The screen should remain on the POS interface to allow immediate entry of a new order.
