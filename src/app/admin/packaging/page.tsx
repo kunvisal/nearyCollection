@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, Phone, CheckCircle2, Search, ArrowRight, User } from "lucide-react";
+import { Package, Phone, CheckCircle2, Search, ArrowRight, User, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
+import { useToast } from "@/context/ToastContext";
 
 type OrderItem = {
     id: string;
@@ -37,6 +38,7 @@ export default function PackagingWorkflowPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const { addToast } = useToast();
 
     const fetchProcessingOrders = async () => {
         try {
@@ -65,19 +67,20 @@ export default function PackagingWorkflowPage() {
             const res = await fetch(`/api/admin/orders/${orderId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "PACKED" })
+                body: JSON.stringify({ status: "SHIPPED" })
             });
 
             if (res.ok) {
                 // Remove from local state immediately for snappy UI
                 setOrders(prev => prev.filter(o => o.id !== orderId));
+                addToast("success", "Success", "Order confirmed packed & ready for delivery.");
             } else {
                 const json = await res.json();
-                alert(json.error || "Update failed");
+                addToast("error", "Failed", json.error || "Update failed");
             }
         } catch (error) {
             console.error(error);
-            alert("An error occurred");
+            addToast("error", "Error", "An unexpected error occurred.");
         } finally {
             setProcessingId(null);
         }
@@ -198,11 +201,16 @@ export default function PackagingWorkflowPage() {
                                 <button
                                     onClick={() => handleConfirmPackaging(order.id)}
                                     disabled={processingId === order.id}
-                                    className="px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors w-full sm:w-auto"
+                                    className="px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-75 disabled:cursor-not-allowed text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors w-full sm:w-auto min-w-[160px]"
                                 >
-                                    {processingId === order.id ? 'Processing...' : (
+                                    {processingId === order.id ? (
                                         <>
-                                            <CheckCircle2 className="w-4 h-4" />
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="w-5 h-5" />
                                             Confirm Packed
                                         </>
                                     )}

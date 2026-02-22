@@ -41,11 +41,31 @@ export class DashboardRepository {
             }
         });
 
+        const serializedOrders = recentOrders.map(order => ({
+            ...order,
+            total: Number(order.total),
+            subtotal: Number(order.subtotal),
+            deliveryFee: Number(order.deliveryFee),
+            items: order.items.map(item => ({
+                ...item,
+                costPriceSnapshot: Number(item.costPriceSnapshot),
+                salePriceSnapshot: Number(item.salePriceSnapshot),
+                discountSnapshot: Number(item.discountSnapshot),
+                lineTotal: Number(item.lineTotal),
+                variant: item.variant ? {
+                    ...item.variant,
+                    costPrice: Number(item.variant.costPrice),
+                    salePrice: Number(item.variant.salePrice),
+                    discountAmount: Number(item.variant.discountAmount),
+                } : undefined
+            }))
+        }));
+
         return {
             totalCustomers,
             totalOrders,
             totalRevenue,
-            recentOrders,
+            recentOrders: serializedOrders,
         };
     }
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Truck, Phone, CheckCircle2, XCircle, Search, MapPin, User } from "lucide-react";
+import { Truck, Phone, CheckCircle2, XCircle, Search, MapPin, User, Loader2 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
 
 type Order = {
@@ -30,6 +31,7 @@ export default function DeliveryWorkflowPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const { addToast } = useToast();
 
     const fetchShippedOrders = async () => {
         try {
@@ -61,23 +63,29 @@ export default function DeliveryWorkflowPage() {
             // But since 'CANCELLED' implies returned to stock, we'll map FAILED to CANCELLED for now or keep in SHIPPED with a note?
             // Actually, the simplest for FAILED is just to Cancel or keep it and require manual review. Let's just use CANCELLED.
             const newStatus = status === 'FAILED' ? 'CANCELLED' : 'DELIVERED';
+            const payload: any = { status: newStatus };
+
+            if (status === 'DELIVERED') {
+                payload.paymentStatus = 'PAID';
+            }
 
             const res = await fetch(`/api/admin/orders/${orderId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify(payload)
             });
 
             if (res.ok) {
                 // Remove from local state immediately for snappy UI
                 setOrders(prev => prev.filter(o => o.id !== orderId));
+                addToast("success", "Success", `Order ${newStatus === 'CANCELLED' ? 'failed/returned' : 'delivered'} successfully.`);
             } else {
                 const json = await res.json();
-                alert(json.error || "Update failed");
+                addToast("error", "Failed", json.error || "Update failed");
             }
         } catch (error) {
             console.error(error);
-            alert("An error occurred");
+            addToast("error", "Error", "An unexpected error occurred");
         } finally {
             setProcessingId(null);
         }
@@ -182,18 +190,30 @@ export default function DeliveryWorkflowPage() {
                                 <button
                                     onClick={() => handleUpdateDeliveryStatus(order.id, 'FAILED')}
                                     disabled={processingId === order.id}
-                                    className="py-2.5 bg-white dark:bg-gray-800 border-2 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    className="py-2.5 bg-white dark:bg-gray-800 border-2 border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                                 >
-                                    <XCircle className="w-4 h-4" />
-                                    Fail / Return
+                                    {processingId === order.id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <XCircle className="w-4 h-4" />
+                                            Fail / Return
+                                        </>
+                                    )}
                                 </button>
                                 <button
                                     onClick={() => handleUpdateDeliveryStatus(order.id, 'DELIVERED')}
                                     disabled={processingId === order.id}
-                                    className="py-2.5 bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                                    className="py-2.5 bg-green-600 hover:bg-green-700 text-white shadow-sm rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
                                 >
-                                    <CheckCircle2 className="w-4 h-4" />
-                                    Delivered
+                                    {processingId === order.id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            Delivered
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

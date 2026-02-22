@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, List } from "lucide-react";
+import { Plus, Edit2, Trash2, List, Loader2 } from "lucide-react";
+import { useToast } from "@/context/ToastContext";
 
 type Category = { id: number; nameKm: string; nameEn: string | null; };
 type Product = {
@@ -17,9 +18,11 @@ type Product = {
 };
 
 export default function ProductsPage() {
+    const { addToast } = useToast();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [formData, setFormData] = useState({
@@ -89,6 +92,7 @@ export default function ProductsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsSubmitting(true);
             const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : "/api/admin/products";
             const method = editingProduct ? "PUT" : "POST";
 
@@ -101,13 +105,16 @@ export default function ProductsPage() {
             if (res.ok) {
                 await fetchData();
                 closeModal();
+                addToast("success", "Success", `Product ${editingProduct ? "updated" : "created"} successfully.`);
             } else {
                 const json = await res.json();
-                alert(json.error || "Something went wrong.");
+                addToast("error", "Failed", json.error || "Something went wrong.");
             }
         } catch (error) {
             console.error(error);
-            alert("Error saving product.");
+            addToast("error", "Error", "An unexpected error occurred saving the product.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -288,18 +295,21 @@ export default function ProductsPage() {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Status
                                     </label>
-                                    <label className="flex items-center mt-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.isActive}
-                                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                            {formData.isActive ? "Active" : "Hidden"}
-                                        </span>
-                                    </label>
+                                    <div className="flex items-center mt-2">
+                                        <label htmlFor="product-status-toggle" className="flex items-center cursor-pointer relative">
+                                            <input
+                                                type="checkbox"
+                                                id="product-status-toggle"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300 select-none">
+                                                {formData.isActive ? "Active" : "Hidden"}
+                                            </span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -313,9 +323,17 @@ export default function ProductsPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
+                                    disabled={isSubmitting}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
                                 >
-                                    Save Product
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        "Save Product"
+                                    )}
                                 </button>
                             </div>
                         </form>

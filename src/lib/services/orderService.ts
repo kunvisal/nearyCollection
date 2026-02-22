@@ -17,6 +17,7 @@ export class OrderService {
                 discount?: number;
             }>;
             note?: string;
+            isPOS?: boolean;
         }
     ) {
         try {

@@ -189,19 +189,21 @@
 * Easy-to-use POS-style interface to select products and variants quickly.
 * Input for customer details (Name, Phone, Address, Delivery Zone, etc.).
 * Print invoice/receipt and shipping label upon order completion.
-* Auto-creates the order into the system.
+* Automatically sets Order Status to `PROCESSING` so the order immediately enters the Packaging workflow.
+* Automatically sets Payment Status to `PAID` if the Delivery Zone is Province, or `UNPAID` if the Delivery Zone is Phnom Penh.
 
 ### FR-13 Order Packaging Workflow
 
-* Dedicated view for orders that need packaging.
+* Dedicated view for orders that need packaging (Status: `PROCESSING`).
 * Displays all necessary order items and customer information.
 * Quick-contact buttons (call/message customer).
-* "Confirm Packaging" button to update the status to packed/ready for shipment.
+* "Confirm Packaging" button that updates the status directly to `SHIPPED`, causing it to enter the Delivery workflow automatically.
 
 ### FR-14 Order Delivery Workflow
 
-* Dedicated view for orders out for delivery.
+* Dedicated view for orders out for delivery (Status: `SHIPPED`).
 * Simple action buttons to mark the delivery as "Successful" or "Failed".
+* Marking as "Successful" (`DELIVERED`) automatically updates the Payment Status to `PAID`.
 
 ---
 

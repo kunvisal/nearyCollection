@@ -16,6 +16,7 @@ export class OrderRepository {
                 discount?: number;
             }>;
             note?: string;
+            isPOS?: boolean;
         }
     ) {
         return prisma.$transaction(async (tx) => {
@@ -79,6 +80,16 @@ export class OrderRepository {
             const randomPart = Math.floor(1000 + Math.random() * 9000);
             const orderCode = `NC-${dateStr}-${randomPart}`;
 
+            let orderStatus: OrderStatus = 'NEW';
+            let paymentStatus: PaymentStatus = 'UNPAID';
+
+            if (orderData.isPOS) {
+                orderStatus = 'PROCESSING';
+                if (orderData.deliveryZone === 'PROVINCE') {
+                    paymentStatus = 'PAID';
+                }
+            }
+
             // 3. Create Order
             const order = await tx.order.create({
                 data: {
@@ -89,8 +100,8 @@ export class OrderRepository {
                     subtotal: new Prisma.Decimal(subtotal),
                     total: new Prisma.Decimal(total),
                     paymentMethod: orderData.paymentMethod,
-                    paymentStatus: 'UNPAID',
-                    orderStatus: 'NEW',
+                    paymentStatus,
+                    orderStatus,
                     shippingAddress: { detailedAddress: orderData.deliveryAddress },
                     note: orderData.note,
                     items: {

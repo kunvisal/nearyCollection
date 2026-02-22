@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
-import { Plus, Minus, Search, ShoppingCart, Trash2, X } from "lucide-react";
+import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2 } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
+import { useToast } from "@/context/ToastContext";
 import { DeliveryZone, PaymentMethod } from "@prisma/client";
 
 // Reusing types roughly matching the API response
@@ -60,6 +61,7 @@ export default function POSPage() {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const [isPending, startTransition] = useTransition();
+    const { addToast } = useToast();
 
     useEffect(() => {
         fetchProducts();
@@ -111,7 +113,7 @@ export default function POSPage() {
                 const currentQty = prev[existingIndex].qty;
                 const maxStock = variant.stockOnHand - variant.reservedQty;
                 if (currentQty >= maxStock) {
-                    alert('Not enough stock available.');
+                    addToast("warning", "Stock Limit", 'Not enough stock available.');
                     return prev;
                 }
                 const newCart = [...prev];
@@ -156,7 +158,7 @@ export default function POSPage() {
     const handleCheckout = (e: React.FormEvent) => {
         e.preventDefault();
         if (cart.length === 0) {
-            alert("Cart is empty.");
+            addToast("warning", "Empty Cart", "Cart is empty.");
             return;
         }
 
@@ -177,11 +179,12 @@ export default function POSPage() {
                     paymentMethod: formData.paymentMethod,
                     items: payloadItems,
                     note: formData.note,
+                    isPOS: true,
                 }
             );
 
             if (res.success && res.order) {
-                // Reset cart on success
+                // Reset cart on success but keep staff on the same page
                 setCart([]);
                 setFormData({
                     customerName: "",
@@ -191,11 +194,10 @@ export default function POSPage() {
                     paymentMethod: "COD",
                     note: ""
                 });
-                alert(`POS Order placed successfully! Order Code: ${res.order.orderCode}`);
+                addToast("success", "Order Placed", `POS Order ${res.order.orderCode} placed successfully!`);
                 fetchProducts(); // refresh stock numbers
-                // Optionally could window.open(`/admin/orders/${res.order.id}/receipt`, '_blank') to auto-print
             } else {
-                alert("Failed to create order: " + (res.error || "Unknown error"));
+                addToast("error", "Failed", "Failed to create order: " + (res.error || "Unknown error"));
             }
         });
     };
@@ -378,9 +380,16 @@ export default function POSPage() {
                         form="pos-checkout-form"
                         type="submit"
                         disabled={isPending || cart.length === 0}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold flex items-center justify-center transition-colors"
+                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-75 disabled:cursor-not-allowed text-white rounded-xl font-bold flex items-center justify-center transition-colors shadow-sm"
                     >
-                        {isPending ? 'Processing...' : 'Place Order & Auto-Confirm'}
+                        {isPending ? (
+                            <>
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            'Place Order & Auto-Confirm'
+                        )}
                     </button>
                 </div>
             </div>

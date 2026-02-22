@@ -17,6 +17,7 @@ export async function createOrderAction(
             discount?: number;
         }>;
         note?: string;
+        isPOS?: boolean;
     }
 ) {
     try {

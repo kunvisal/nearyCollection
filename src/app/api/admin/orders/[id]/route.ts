@@ -41,13 +41,21 @@ export async function PUT(
         }
 
         const body = await req.json();
-        const { status } = body;
+        const { status, paymentStatus } = body;
 
-        if (!status) {
-            return NextResponse.json({ error: "Status is required" }, { status: 400 });
+        if (!status && !paymentStatus) {
+            return NextResponse.json({ error: "Update fields are required" }, { status: 400 });
         }
 
-        const updatedOrder = await OrderService.updateOrderStatus(id, status);
+        let updatedOrder = null;
+
+        if (status) {
+            updatedOrder = await OrderService.updateOrderStatus(id, status);
+        }
+
+        if (paymentStatus) {
+            updatedOrder = await OrderService.updatePaymentStatus(id, paymentStatus);
+        }
 
         return NextResponse.json({ data: updatedOrder, success: true });
     } catch (error: any) {

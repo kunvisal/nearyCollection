@@ -5,6 +5,7 @@ import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import React from "react";
+import { ToastProvider } from "@/context/ToastContext";
 
 function AdminLayoutContent({
   children,
@@ -44,9 +45,11 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
-    </SidebarProvider>
+    <ToastProvider>
+      <SidebarProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </SidebarProvider>
+    </ToastProvider>
   );
 }
 

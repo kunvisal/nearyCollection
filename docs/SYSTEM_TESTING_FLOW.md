@@ -64,7 +64,8 @@ Follow these flows sequentially to verify that all systems are working perfectly
    - Fill in the customer details and delivery zone.
    - Click **Place Order & Auto-Confirm**.
 4. **Order Confirmation:**
-   - Verify the order is created successfully and the cart is cleared.
+   - **Verify Status & State:** The cart should clear. The order status is automatically set to `PROCESSING`. The screen should remain on the POS interface to allow immediate entry of a new order.
+   - **Verify Payment:** If you selected a Province Delivery Zone, the Payment Status is automatically set to `PAID`. Otherwise, it's `UNPAID`.
    - Verify Telegram notification is received for the POS order.
 
 ## Flow 5: Accelerated Order Fulfillment (Admin Panel)
@@ -72,16 +73,14 @@ Follow these flows sequentially to verify that all systems are working perfectly
 *Objective: Test the dedicated packaging and delivery workflows for processing orders.*
 
 1. **Order Packaging:** Go to Packaging (`/admin/packaging`):
-   - Navigate to the Orders overview first (`/admin/orders`) and change the status of the Storefront order from Flow 3 to `PROCESSING` to simulate admin approval. POS orders are created as `NEW` as well, so mark the POS order to `PROCESSING` too.
-   - Go back to Packaging (`/admin/packaging`). You should see both `PROCESSING` orders.
+   - You should see your POS order here automatically because its status was set to `PROCESSING`. For the Storefront order from Flow 3, navigate to Orders (`/admin/orders`) and change its status to `PROCESSING` to simulate admin approval.
+   - Refresh or go back to Packaging (`/admin/packaging`). You should see both `PROCESSING` orders.
    - Click the **Telegram** or **Phone** buttons to test the customer contact links.
-   - Click **Confirm Packaging** to move the orders to `PACKED`. They will disappear from this view.
-2. **Move to Shipped:**
-   - Go to Orders (`/admin/orders`) or Order Details and change the statuses from `PACKED` to `SHIPPED` (simulating handing it over to the delivery service).
-3. **Order Delivery:** Go to Delivery (`/admin/delivery`):
-   - You should see the orders that are now `SHIPPED`.
-   - Click **Delivered** to mark an order as successfully delivered. The status will update to `DELIVERED`.
-   - Alternatively, test a failed delivery by clicking **Failed / Return** on another order to cancel it and return stock to the system.
+   - Click **Confirm Packed** to move the orders directly to `SHIPPED`. They will disappear from this view and be sent to delivery.
+2. **Order Delivery:** Go to Delivery (`/admin/delivery`):
+   - You should see the orders here that are now `SHIPPED`.
+   - Click **Delivered** to mark an order as successfully delivered. The status will update to `DELIVERED`. If it was previously unpaid (e.g., PP Zone), its payment status will automatically update to `PAID`.
+   - Alternatively, test a failed delivery by clicking **Fail / Return** on another order to cancel it and return stock to the system.
 
 ## Flow 6: Analytics & Inventory Monitoring (Admin Panel)
 

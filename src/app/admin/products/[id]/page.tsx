@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus, Edit2, Trash2, ArrowLeft, Upload, Image as ImageIcon, History } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, Upload, Image as ImageIcon, History, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import { useToast } from "@/context/ToastContext";
 
 type Variant = {
     id: string;
@@ -39,6 +40,8 @@ export default function ManageProductPage() {
     const [variantForm, setVariantForm] = useState({
         sku: "", color: "", size: "", costPrice: 0, salePrice: 0, stockOnHand: 0, isActive: true
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { addToast } = useToast();
 
     // Inventory Modal
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
@@ -160,26 +163,39 @@ export default function ManageProductPage() {
     const handleVariantSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsSubmitting(true);
             const url = editingVariant
                 ? `/api/admin/variants/${editingVariant.id}`
                 : `/api/admin/products/${productId}/variants`;
             const method = editingVariant ? "PUT" : "POST";
 
+            // Properly serialize numbers to satisfy backend strict Zod schema validation
+            const payload = {
+                ...variantForm,
+                costPrice: parseFloat(variantForm.costPrice as any) || 0,
+                salePrice: parseFloat(variantForm.salePrice as any) || 0,
+                stockOnHand: parseInt(variantForm.stockOnHand as any, 10) || 0,
+            };
+
             const res = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(variantForm),
+                body: JSON.stringify(payload),
             });
 
             if (res.ok) {
                 setIsVariantModalOpen(false);
                 fetchProduct();
+                addToast("success", "Success", `Variant ${editingVariant ? "updated" : "created"} successfully.`);
             } else {
                 const json = await res.json();
-                alert(json.error || "Failed to save variant");
+                addToast("error", "Failed", json.error || "Failed to save variant");
             }
         } catch (error) {
             console.error(error);
+            addToast("error", "Error", "An unexpected error occurred saving the variant.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -257,10 +273,7 @@ export default function ManageProductPage() {
                             ))}
                         </div>
 
-                        <label className={`
-              border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors
-              ${isUploading ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-300 hover:border-blue-500 dark:border-gray-700 dark:hover:border-blue-500"}
-            `}>
+                        <label className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${isUploading ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-gray-300 hover:border-blue-500 dark:border-gray-700 dark:hover:border-blue-500"}`}>
                             <Upload className={`w-8 h-8 mb-2 ${isUploading ? "text-blue-500 animate-bounce" : "text-gray-400"}`} />
                             <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
                                 {isUploading ? "Uploading..." : "Click to upload image"}
@@ -315,12 +328,12 @@ export default function ManageProductPage() {
                                                 <td className="px-4 py-3 text-right">${variant.costPrice ? Number(variant.costPrice).toFixed(2) : "0.00"}</td>
                                                 <td className="px-4 py-3 text-right font-medium text-blue-600 dark:text-blue-400">${Number(variant.salePrice || 0).toFixed(2)}</td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${variant.stockOnHand > 10 ? 'bg-green-100 text-green-800' : variant.stockOnHand > 0 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'}`}>
+                                                    <span className={`inline - flex px - 2 py - 1 rounded - full text - xs font - semibold ${variant.stockOnHand > 10 ? 'bg-green-100 text-green-800' : variant.stockOnHand > 0 ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'}`}>
                                                         {variant.stockOnHand}
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${variant.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                                                    <span className={`px - 2 py - 1 rounded - full text - [10px] font - bold uppercase ${variant.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
                                                         {variant.isActive ? 'Active' : 'Hidden'}
                                                     </span>
                                                 </td>
@@ -446,18 +459,21 @@ export default function ManageProductPage() {
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Status
                                     </label>
-                                    <label className="flex items-center mt-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={variantForm.isActive}
-                                            onChange={(e) => setVariantForm({ ...variantForm, isActive: e.target.checked })}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                        <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">
-                                            {variantForm.isActive ? "Active" : "Hidden"}
-                                        </span>
-                                    </label>
+                                    <div className="flex items-center mt-2">
+                                        <label htmlFor="variant-status-toggle" className="flex items-center cursor-pointer relative">
+                                            <input
+                                                type="checkbox"
+                                                id="variant-status-toggle"
+                                                checked={variantForm.isActive}
+                                                onChange={(e) => setVariantForm({ ...variantForm, isActive: e.target.checked })}
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                                            <span className="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300 select-none">
+                                                {variantForm.isActive ? "Active" : "Hidden"}
+                                            </span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -471,9 +487,17 @@ export default function ManageProductPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700"
+                                    disabled={isSubmitting}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
                                 >
-                                    Save Variant
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Saving...
+                                        </>
+                                    ) : (
+                                        "Save Variant"
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -524,7 +548,7 @@ export default function ManageProductPage() {
                                             <tr key={log.id} className="border-t border-gray-100 dark:border-gray-700">
                                                 <td className="px-4 py-3 whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
                                                 <td className="px-4 py-3">
-                                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${log.type === "IN" ? "bg-green-100 text-green-800" :
+                                                    <span className={`px - 2 py - 0.5 rounded text - xs font - semibold ${log.type === "IN" ? "bg-green-100 text-green-800" :
                                                         log.type === "OUT" ? "bg-red-100 text-red-800" :
                                                             log.type === "ADJUST" ? "bg-blue-100 text-blue-800" :
                                                                 "bg-gray-100 text-gray-800"
