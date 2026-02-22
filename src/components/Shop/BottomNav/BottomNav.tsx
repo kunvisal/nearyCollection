@@ -63,7 +63,7 @@ export default function BottomNav() {
                 </div>
                 <span>Cart</span>
             </button>
-            <Link href="/profile" className={`${styles.navItem} ${isActive("/profile") ? styles.active : ""}`}>
+            <Link href="/admin" className={`${styles.navItem} ${isActive("/admin") ? styles.active : ""}`}>
                 <UserIcon />
                 <span>Profile</span>
             </Link>
