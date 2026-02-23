@@ -9,6 +9,7 @@ export class OrderService {
             deliveryZone: DeliveryZone;
             deliveryAddress: string;
             deliveryFee: number;
+            isFreeDelivery?: boolean;
             paymentMethod: PaymentMethod;
             items: Array<{
                 variantId: string;
@@ -17,6 +18,7 @@ export class OrderService {
                 discount?: number;
             }>;
             note?: string;
+            discount?: number;
             isPOS?: boolean;
         }
     ) {

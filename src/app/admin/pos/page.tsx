@@ -57,8 +57,11 @@ export default function POSPage() {
         deliveryZone: "PP" as DeliveryZone,
         deliveryAddress: "",
         paymentMethod: "COD" as PaymentMethod,
-        note: ""
+        note: "",
+        discount: "",
+        isFreeDelivery: false,
     });
+    const [receiptData, setReceiptData] = useState<any>(null);
 
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -172,7 +175,9 @@ export default function POSPage() {
 
     const subtotal = cart.reduce((sum, item) => sum + (item.salePrice * item.qty), 0);
     const deliveryFee = formData.deliveryZone === "PP" ? 1.50 : 2.50;
-    const total = subtotal + deliveryFee;
+    const discountValue = Number(formData.discount) || 0;
+    const appliedDeliveryFee = formData.isFreeDelivery ? 0 : deliveryFee;
+    const total = Math.max(0, subtotal - discountValue + appliedDeliveryFee);
 
     const handleCheckout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -195,36 +200,76 @@ export default function POSPage() {
                     deliveryZone: formData.deliveryZone,
                     deliveryAddress: formData.deliveryAddress,
                     deliveryFee: deliveryFee,
+                    isFreeDelivery: formData.isFreeDelivery,
                     paymentMethod: formData.paymentMethod,
                     items: payloadItems,
                     note: formData.note,
+                    discount: discountValue,
                     isPOS: true,
                 }
             );
 
             if (res.success && res.order) {
-                // Reset cart on success but keep staff on the same page
-                setCart([]);
-                setIsCartOpen(false);
-                setFormData({
-                    customerName: "",
-                    customerPhone: "",
-                    deliveryZone: "PP",
-                    deliveryAddress: "",
-                    paymentMethod: "COD",
-                    note: ""
+                // Show receipt instead of clearing immediately
+                setReceiptData({
+                    orderCode: res.order.orderCode,
+                    date: new Date().toLocaleString(),
+                    customerName: formData.customerName,
+                    customerPhone: formData.customerPhone,
+                    items: [...cart],
+                    subtotal,
+                    discount: discountValue,
+                    deliveryFee: appliedDeliveryFee,
+                    isFreeDelivery: formData.isFreeDelivery,
+                    total,
                 });
-                addToast("success", "Order Placed", `POS Order ${res.order.orderCode} placed successfully!`);
                 fetchProducts(); // refresh stock numbers
+                addToast("success", "Order Placed", `POS Order ${res.order.orderCode} placed successfully!`);
             } else {
                 addToast("error", "Failed", "Failed to create order: " + (res.error || "Unknown error"));
             }
         });
     };
 
+    const handleNewOrder = () => {
+        setCart([]);
+        setReceiptData(null);
+        setIsCartOpen(false);
+        setFormData({
+            customerName: "",
+            customerPhone: "",
+            deliveryZone: "PP",
+            deliveryAddress: "",
+            paymentMethod: "COD",
+            note: "",
+            discount: "",
+            isFreeDelivery: false,
+        });
+    };
+
+    const copyReceiptToClipboard = () => {
+        if (!receiptData) return;
+        const textToCopy = `===== Receipt =====\n` +
+            `Order: ${receiptData.orderCode}\n` +
+            `Date: ${receiptData.date}\n` +
+            `Customer: ${receiptData.customerName} (${receiptData.customerPhone})\n` +
+            `-------------------\n` +
+            receiptData.items.map((i: any) => `${i.nameKm} (${i.size}, ${i.color}) x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`).join('\n') +
+            `\n-------------------\n` +
+            `Subtotal: $${receiptData.subtotal.toFixed(2)}\n` +
+            (receiptData.discount > 0 ? `Discount: -$${receiptData.discount.toFixed(2)}\n` : '') +
+            (receiptData.isFreeDelivery ? `Delivery: FREE\n` : `Delivery: $${receiptData.deliveryFee.toFixed(2)}\n`) +
+            `Total: $${receiptData.total.toFixed(2)}\n` +
+            `===================`;
+
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            addToast("success", "Copied", "Receipt text copied to clipboard!");
+        });
+    };
+
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden relative w-full bg-white dark:bg-gray-950 shadow-sm rounded-2xl border border-gray-100 dark:border-gray-800 -mt-2">
-            <div className="w-full h-full flex flex-col relative">
+        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden relative w-full bg-white dark:bg-gray-950 shadow-sm rounded-2xl border border-gray-100 dark:border-gray-800 -mt-2 print:h-auto print:border-none print:shadow-none print:overflow-visible">
+            <div className={`w-full h-full flex flex-col relative ${receiptData ? 'print:hidden' : ''}`}>
 
                 {/* Fixed App Header & Categories */}
                 <div className="pt-4 pb-0 px-4 bg-white dark:bg-gray-900 shadow-sm z-10 shrink-0">
@@ -279,6 +324,8 @@ export default function POSPage() {
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                             {filteredProducts.map(product => {
                                 const totalInCart = cart.filter(c => c.productId === product.id).reduce((sum, c) => sum + c.qty, 0);
+                                const totalAvailableStock = product.variants.reduce((sum, v) => sum + (v.stockOnHand - v.reservedQty), 0);
+                                const isLowStock = totalAvailableStock <= 5;
                                 return (
                                     <div key={product.id} className="relative group cursor-pointer" onClick={() => handleProductClick(product)}>
                                         <div className="aspect-square relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-2">
@@ -300,8 +347,13 @@ export default function POSPage() {
                                             </button>
                                         </div>
                                         <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1 text-[15px]">{product.nameKm}</h3>
-                                        <div className="text-gray-600 dark:text-gray-400 text-sm mt-0.5">
-                                            from ${product.variants.length > 0 ? Math.min(...product.variants.map(v => Number(v.salePrice))).toFixed(2) : "0.00"}
+                                        <div className="flex justify-between items-center mt-1">
+                                            <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
+                                                from ${product.variants.length > 0 ? Math.min(...product.variants.map(v => Number(v.salePrice))).toFixed(2) : "0.00"}
+                                            </div>
+                                            <div className={`text-[11px] px-1.5 py-0.5 rounded-md border font-bold ${isLowStock ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50' : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'}`}>
+                                                {totalAvailableStock} in stock
+                                            </div>
                                         </div>
                                     </div>
                                 )
@@ -328,7 +380,7 @@ export default function POSPage() {
                 )}
 
                 {/* Slide-Up Checkout Drawer */}
-                {isCartOpen && (
+                {isCartOpen && !receiptData && (
                     <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4">
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
                         <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full max-w-lg sm:max-w-2xl flex flex-col relative animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 max-h-[92vh] sm:max-h-[90vh] shadow-2xl overflow-hidden">
@@ -369,7 +421,11 @@ export default function POSPage() {
                                     {/* Summary */}
                                     <div className="space-y-2 text-[15px] text-gray-700 dark:text-gray-300">
                                         <div className="flex justify-between"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-                                        <div className="flex justify-between"><span>Standard delivery</span><span>${deliveryFee.toFixed(2)}</span></div>
+                                        {discountValue > 0 && <div className="flex justify-between text-green-600 dark:text-green-400"><span>Discount</span><span>-${discountValue.toFixed(2)}</span></div>}
+                                        <div className="flex justify-between">
+                                            <span>Standard delivery {formData.isFreeDelivery && <span className="text-[#e21b70] text-xs font-bold bg-pink-50 px-2 py-0.5 rounded ml-2">FREE</span>}</span>
+                                            <span className={formData.isFreeDelivery ? "line-through text-gray-400" : ""}>${deliveryFee.toFixed(2)}</span>
+                                        </div>
                                         <div className="flex justify-between font-bold text-lg text-gray-900 dark:text-white pt-2">
                                             <span>Total <span className="text-sm font-normal text-gray-500">(incl. fees and tax)</span></span>
                                             <span className="text-[#e21b70]">${total.toFixed(2)}</span>
@@ -400,6 +456,24 @@ export default function POSPage() {
                                             </select>
                                             <input placeholder="Note (Optional)" value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none" />
                                         </div>
+
+                                        <h3 className="font-bold text-gray-900 dark:text-white text-lg mt-4">Discounts & Options</h3>
+                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                            <input type="checkbox" id="free-delivery" checked={formData.isFreeDelivery} onChange={e => setFormData({ ...formData, isFreeDelivery: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-[#e21b70] focus:ring-[#e21b70]" />
+                                            <label htmlFor="free-delivery" className="flex-1 font-medium text-gray-900 dark:text-white text-[15px] cursor-pointer">Free Delivery (Shop pays)</label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative w-full">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                                                <input
+                                                    type="number"
+                                                    placeholder="Cash Discount Amount"
+                                                    value={formData.discount}
+                                                    onChange={e => setFormData({ ...formData, discount: e.target.value })}
+                                                    className="pl-8 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none"
+                                                />
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                             </div>
@@ -413,7 +487,70 @@ export default function POSPage() {
                         </div>
                     </div>
                 )}
+
             </div>
+            {/* Successful Order Receipt Modal (Moved outside the relative wrapper) */}
+            {receiptData && (
+                <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 print:static print:inset-auto print:flex-none print:block">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm print:hidden"></div>
+                    <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full max-w-sm sm:max-w-md flex flex-col relative animate-in zoom-in-95 duration-300 ease-out shadow-2xl overflow-hidden print:w-full print:max-w-none print:shadow-none print:rounded-none">
+                        <div className="p-6 text-center border-b border-gray-100 dark:border-gray-800 print:hidden">
+                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            </div>
+                            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Order Confirmed!</h2>
+                            <p className="text-gray-500 mt-1">Order #{receiptData.orderCode}</p>
+                        </div>
+
+                        <div id="receipt-content" className="p-6 overflow-y-auto max-h-[50vh] bg-white text-gray-900">
+                            <div className="text-center mb-6 hidden print:block">
+                                <h2 className="text-2xl font-black">Neary Collection</h2>
+                                <p className="text-sm text-gray-500">Order #{receiptData.orderCode}</p>
+                            </div>
+
+                            <div className="text-sm space-y-3 mb-6">
+                                <div className="flex justify-between"><span>Date:</span> <span>{receiptData.date}</span></div>
+                                <div className="flex justify-between"><span>Customer:</span> <span className="font-bold">{receiptData.customerName}</span></div>
+                                <div className="flex justify-between"><span>Phone:</span> <span>{receiptData.customerPhone}</span></div>
+                            </div>
+
+                            <div className="border-t border-b border-gray-200 py-4 space-y-3 mb-4">
+                                {receiptData.items.map((item: any) => (
+                                    <div key={item.variantId} className="flex justify-between text-sm">
+                                        <div>
+                                            <div className="font-medium">{item.nameKm}</div>
+                                            <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} ({item.size}, {item.color})</div>
+                                        </div>
+                                        <div className="font-medium">${(item.salePrice * item.qty).toFixed(2)}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between"><span>Subtotal</span> <span>${receiptData.subtotal.toFixed(2)}</span></div>
+                                {receiptData.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span> <span>-${receiptData.discount.toFixed(2)}</span></div>}
+                                <div className="flex justify-between"><span>Delivery {receiptData.isFreeDelivery && '(Free)'}</span> <span>${receiptData.deliveryFee.toFixed(2)}</span></div>
+                                <div className="flex justify-between text-lg font-black pt-2 border-t border-gray-200 mt-2">
+                                    <span>Total</span>
+                                    <span>${receiptData.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-3 print:hidden shrink-0">
+                            <button onClick={() => window.print()} className="py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                                Print
+                            </button>
+                            <button onClick={copyReceiptToClipboard} className="py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                                Copy Text
+                            </button>
+                            <button onClick={handleNewOrder} className="col-span-2 py-3 px-4 bg-[#e21b70] text-white rounded-xl font-bold hover:bg-[#c2145e] transition text-lg mt-2">
+                                New Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Select Variant Modal */}
             {isProductModalOpen && selectedProduct && (

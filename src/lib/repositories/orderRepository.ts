@@ -8,6 +8,7 @@ export class OrderRepository {
             deliveryZone: DeliveryZone;
             deliveryAddress: string;
             deliveryFee: number;
+            isFreeDelivery?: boolean;
             paymentMethod: PaymentMethod;
             items: Array<{
                 variantId: string;
@@ -16,6 +17,7 @@ export class OrderRepository {
                 discount?: number;
             }>;
             note?: string;
+            discount?: number;
             isPOS?: boolean;
         }
     ) {
@@ -74,7 +76,10 @@ export class OrderRepository {
                 });
             }
 
-            const total = subtotal + orderData.deliveryFee;
+            const orderDiscount = orderData.discount || 0;
+            const deliveryCharge = orderData.isFreeDelivery ? 0 : orderData.deliveryFee;
+            // Total should not be negative
+            const total = Math.max(0, subtotal - orderDiscount + deliveryCharge);
 
             const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             const randomPart = Math.floor(1000 + Math.random() * 9000);
@@ -97,7 +102,10 @@ export class OrderRepository {
                     customerId: customer.id,
                     deliveryZone: orderData.deliveryZone,
                     deliveryFee: new Prisma.Decimal(orderData.deliveryFee),
+
+                    isFreeDelivery: orderData.isFreeDelivery || false,
                     subtotal: new Prisma.Decimal(subtotal),
+                    discount: new Prisma.Decimal(orderDiscount),
                     total: new Prisma.Decimal(total),
                     paymentMethod: orderData.paymentMethod,
                     paymentStatus,
