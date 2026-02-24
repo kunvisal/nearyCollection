@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
 import { useToast } from "@/context/ToastContext";
-import { DeliveryZone, PaymentMethod } from "@prisma/client";
+import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 
 // Reusing types roughly matching the API response
 type Variant = {
@@ -41,6 +41,12 @@ type CartItem = {
     qty: number;
 };
 
+const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
+    JALAT: "Jalat (ចល័ត)",
+    VET: "VET (វីរប៊ុនថាំ)",
+    JT: "J&T",
+};
+
 export default function POSPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -57,6 +63,7 @@ export default function POSPage() {
         deliveryZone: "PP" as DeliveryZone,
         deliveryAddress: "",
         paymentMethod: "COD" as PaymentMethod,
+        deliveryService: "JALAT" as DeliveryService,
         note: "",
         discount: "",
         isFreeDelivery: false,
@@ -174,10 +181,30 @@ export default function POSPage() {
     };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.salePrice * item.qty), 0);
+    const isPPZone = formData.deliveryZone === "PP";
     const deliveryFee = formData.deliveryZone === "PP" ? 1.50 : 2.50;
     const discountValue = Number(formData.discount) || 0;
     const appliedDeliveryFee = formData.isFreeDelivery ? 0 : deliveryFee;
     const total = Math.max(0, subtotal - discountValue + appliedDeliveryFee);
+
+    const handleDeliveryZoneChange = (zone: DeliveryZone) => {
+        if (zone === "PP") {
+            setFormData(prev => ({
+                ...prev,
+                deliveryZone: zone,
+                paymentMethod: "COD",
+                deliveryService: "JALAT",
+            }));
+            return;
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            deliveryZone: zone,
+            paymentMethod: prev.paymentMethod === "COD" ? "ABA" : prev.paymentMethod,
+            deliveryService: prev.deliveryService === "JALAT" ? "VET" : prev.deliveryService,
+        }));
+    };
 
     const handleCheckout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -202,6 +229,7 @@ export default function POSPage() {
                     deliveryFee: deliveryFee,
                     isFreeDelivery: formData.isFreeDelivery,
                     paymentMethod: formData.paymentMethod,
+                    deliveryService: formData.deliveryService,
                     items: payloadItems,
                     note: formData.note,
                     discount: discountValue,
@@ -217,6 +245,7 @@ export default function POSPage() {
                     customerName: formData.customerName,
                     customerPhone: formData.customerPhone,
                     items: [...cart],
+                    deliveryService: formData.deliveryService,
                     subtotal,
                     discount: discountValue,
                     deliveryFee: appliedDeliveryFee,
@@ -241,6 +270,7 @@ export default function POSPage() {
             deliveryZone: "PP",
             deliveryAddress: "",
             paymentMethod: "COD",
+            deliveryService: "JALAT",
             note: "",
             discount: "",
             isFreeDelivery: false,
@@ -253,6 +283,7 @@ export default function POSPage() {
             `Order: ${receiptData.orderCode}\n` +
             `Date: ${receiptData.date}\n` +
             `Customer: ${receiptData.customerName} (${receiptData.customerPhone})\n` +
+            `Delivery Service: ${DELIVERY_SERVICE_LABELS[receiptData.deliveryService as DeliveryService] || '-'}\n` +
             `-------------------\n` +
             receiptData.items.map((i: any) => `${i.nameKm} (${i.size}, ${i.color}) x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`).join('\n') +
             `\n-------------------\n` +
@@ -442,7 +473,7 @@ export default function POSPage() {
                                             <input required placeholder="Phone Number" value={formData.customerPhone} onChange={e => setFormData({ ...formData, customerPhone: e.target.value })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none" />
                                         </div>
                                         <div className="flex gap-3">
-                                            <select value={formData.deliveryZone} onChange={e => setFormData({ ...formData, deliveryZone: e.target.value as DeliveryZone })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-1/3 focus:ring-2 focus:ring-[#e21b70] outline-none">
+                                            <select value={formData.deliveryZone} onChange={e => handleDeliveryZoneChange(e.target.value as DeliveryZone)} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-1/3 focus:ring-2 focus:ring-[#e21b70] outline-none">
                                                 <option value="PP">PP</option>
                                                 <option value="PROVINCE">Province</option>
                                             </select>
@@ -450,12 +481,20 @@ export default function POSPage() {
                                         </div>
                                         <div className="grid grid-cols-2 gap-3">
                                             <select value={formData.paymentMethod} onChange={e => setFormData({ ...formData, paymentMethod: e.target.value as PaymentMethod })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none">
-                                                <option value="COD">COD (Cash)</option>
-                                                <option value="ABA">ABA Pay</option>
-                                                <option value="WING">WING</option>
+                                                <option value="COD" disabled={!isPPZone}>COD (Cash)</option>
+                                                <option value="ABA" disabled={isPPZone}>ABA Pay</option>
+                                                <option value="WING" disabled={isPPZone}>WING</option>
                                             </select>
-                                            <input placeholder="Note (Optional)" value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none" />
+                                            <select value={formData.deliveryService} onChange={e => setFormData({ ...formData, deliveryService: e.target.value as DeliveryService })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none">
+                                                <option value="JALAT" disabled={!isPPZone}>Jalat (ចល័ត)</option>
+                                                <option value="VET" disabled={isPPZone}>VET (វីរប៊ុនថាំ)</option>
+                                                <option value="JT" disabled={isPPZone}>J&T</option>
+                                            </select>
                                         </div>
+                                        <input placeholder="Note (Optional)" value={formData.note} onChange={e => setFormData({ ...formData, note: e.target.value })} className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-[15px] w-full focus:ring-2 focus:ring-[#e21b70] outline-none" />
+                                        <p className="text-xs text-gray-500">
+                                            {isPPZone ? "PP orders are locked to COD + Jalat." : "Province orders allow ABA/WING and only VET or J&T."}
+                                        </p>
 
                                         <h3 className="font-bold text-gray-900 dark:text-white text-lg mt-4">Discounts & Options</h3>
                                         <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700">
@@ -512,6 +551,7 @@ export default function POSPage() {
                                 <div className="flex justify-between"><span>Date:</span> <span>{receiptData.date}</span></div>
                                 <div className="flex justify-between"><span>Customer:</span> <span className="font-bold">{receiptData.customerName}</span></div>
                                 <div className="flex justify-between"><span>Phone:</span> <span>{receiptData.customerPhone}</span></div>
+                                <div className="flex justify-between"><span>Delivery Service:</span> <span>{DELIVERY_SERVICE_LABELS[receiptData.deliveryService as DeliveryService] || "-"}</span></div>
                             </div>
 
                             <div className="border-t border-b border-gray-200 py-4 space-y-3 mb-4">

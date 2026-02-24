@@ -11,6 +11,7 @@ type Order = {
     createdAt: string;
     total: number;
     paymentMethod: string;
+    deliveryService?: string | null;
     paymentStatus: string;
     customer: {
         fullName: string;
@@ -24,6 +25,12 @@ type Order = {
         colorSnapshot: string;
         sizeSnapshot: string;
     }[];
+};
+
+const DELIVERY_SERVICE_LABELS: Record<string, string> = {
+    JALAT: "Jalat (ចល័ត)",
+    VET: "VET (វីរប៊ុនថាំ)",
+    JT: "J&T",
 };
 
 export default function DeliveryWorkflowPage() {
@@ -173,8 +180,13 @@ export default function DeliveryWorkflowPage() {
 
                                 <div className="flex items-start gap-2.5">
                                     <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                                    <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                                        {(order.shippingAddress as any)?.detailedAddress || "No address details provided."}
+                                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                                        <div className="line-clamp-2">
+                                            {(order.shippingAddress as any)?.detailedAddress || "No address details provided."}
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            Delivery Service: {DELIVERY_SERVICE_LABELS[order.deliveryService || ""] || "-"}
+                                        </div>
                                     </div>
                                 </div>
 

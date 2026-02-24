@@ -45,6 +45,7 @@ export class DashboardRepository {
             ...order,
             total: Number(order.total),
             subtotal: Number(order.subtotal),
+            discount: Number(order.discount),
             deliveryFee: Number(order.deliveryFee),
             items: order.items.map(item => ({
                 ...item,

@@ -1,6 +1,6 @@
 import { OrderRepository } from "../repositories/orderRepository";
 import { TelegramService } from "./telegramService";
-import { DeliveryZone, PaymentMethod } from "@prisma/client";
+import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 
 export class OrderService {
     static async createOrder(
@@ -11,6 +11,7 @@ export class OrderService {
             deliveryFee: number;
             isFreeDelivery?: boolean;
             paymentMethod: PaymentMethod;
+            deliveryService?: DeliveryService;
             items: Array<{
                 variantId: string;
                 qty: number;

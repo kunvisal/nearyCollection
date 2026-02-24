@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import { Prisma, OrderStatus, PaymentStatus, DeliveryZone, PaymentMethod } from "@prisma/client";
+import { Prisma, OrderStatus, PaymentStatus, DeliveryZone, PaymentMethod, DeliveryService } from "@prisma/client";
 
 export class OrderRepository {
     static async createOrderTransaction(
@@ -10,6 +10,7 @@ export class OrderRepository {
             deliveryFee: number;
             isFreeDelivery?: boolean;
             paymentMethod: PaymentMethod;
+            deliveryService?: DeliveryService;
             items: Array<{
                 variantId: string;
                 qty: number;
@@ -89,6 +90,28 @@ export class OrderRepository {
             let paymentStatus: PaymentStatus = 'UNPAID';
 
             if (orderData.isPOS) {
+                if (!orderData.deliveryService) {
+                    throw new Error("Delivery service is required for POS orders.");
+                }
+
+                if (orderData.deliveryZone === 'PP') {
+                    if (orderData.paymentMethod !== 'COD') {
+                        throw new Error("For PP orders, payment method must be COD.");
+                    }
+                    if (orderData.deliveryService !== 'JALAT') {
+                        throw new Error("For PP orders, delivery service must be JALAT.");
+                    }
+                }
+
+                if (orderData.deliveryZone === 'PROVINCE') {
+                    if (!['ABA', 'WING'].includes(orderData.paymentMethod)) {
+                        throw new Error("For Province orders, payment method must be ABA or WING.");
+                    }
+                    if (!['VET', 'JT'].includes(orderData.deliveryService)) {
+                        throw new Error("For Province orders, delivery service must be VET or JT.");
+                    }
+                }
+
                 orderStatus = 'PROCESSING';
                 if (orderData.deliveryZone === 'PROVINCE') {
                     paymentStatus = 'PAID';
@@ -108,6 +131,7 @@ export class OrderRepository {
                     discount: new Prisma.Decimal(orderDiscount),
                     total: new Prisma.Decimal(total),
                     paymentMethod: orderData.paymentMethod,
+                    deliveryService: orderData.deliveryService,
                     paymentStatus,
                     orderStatus,
                     shippingAddress: { detailedAddress: orderData.deliveryAddress },

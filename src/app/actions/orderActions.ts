@@ -1,6 +1,6 @@
 "use server";
 
-import { DeliveryZone, PaymentMethod } from "@prisma/client";
+import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import { OrderService } from "@/lib/services/orderService";
 
 export async function createOrderAction(
@@ -11,6 +11,7 @@ export async function createOrderAction(
         deliveryFee: number;
         isFreeDelivery?: boolean;
         paymentMethod: PaymentMethod;
+        deliveryService?: DeliveryService;
         items: Array<{
             variantId: string;
             qty: number;

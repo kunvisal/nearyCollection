@@ -5,6 +5,12 @@ import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import PrintButton from "./PrintButton";
 
+const DELIVERY_SERVICE_LABELS: Record<string, string> = {
+    JALAT: "Jalat (ចល័ត)",
+    VET: "VET (វីរប៊ុនថាំ)",
+    JT: "J&T",
+};
+
 export default async function PrintOrderReceipt({ params }: { params: { id: string } }) {
     const order = await OrderRepository.getOrderById(params.id);
 
@@ -50,6 +56,10 @@ export default async function PrintOrderReceipt({ params }: { params: { id: stri
                         <div className="flex justify-between">
                             <span className="text-gray-600">Delivery Zone:</span>
                             <span className="font-medium">{order.deliveryZone}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-gray-600">Delivery Service:</span>
+                            <span className="font-medium">{DELIVERY_SERVICE_LABELS[order.deliveryService || ""] || "-"}</span>
                         </div>
                         {order.note && (
                             <div className="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs">

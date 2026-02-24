@@ -5,6 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, XCircle, Package, Truck, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
+const DELIVERY_SERVICE_LABELS: Record<string, string> = {
+    JALAT: "Jalat (ចល័ត)",
+    VET: "VET (វីរប៊ុនថាំ)",
+    JT: "J&T",
+};
+
 export default function OrderDetailPage() {
     const params = useParams();
     const router = useRouter();
@@ -230,6 +236,13 @@ export default function OrderDetailPage() {
                         <div className="mb-4">
                             <p className="text-sm text-gray-500 mb-1">Method</p>
                             <p className="font-medium text-gray-900 dark:text-white uppercase">{order.paymentMethod}</p>
+                        </div>
+
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-500 mb-1">Delivery Service</p>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                                {DELIVERY_SERVICE_LABELS[order.deliveryService] || '-'}
+                            </p>
                         </div>
 
                         <div className="mb-4">
