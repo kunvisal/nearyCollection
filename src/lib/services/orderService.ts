@@ -42,6 +42,8 @@ export class OrderService {
         status?: any;
         paymentStatus?: any;
         searchTerm?: string;
+        dateFrom?: Date;
+        dateTo?: Date;
     }) {
         try {
             const page = Math.max(1, params.page || 1);
@@ -54,6 +56,8 @@ export class OrderService {
                 status: params.status,
                 paymentStatus: params.paymentStatus,
                 searchTerm: params.searchTerm,
+                dateFrom: params.dateFrom,
+                dateTo: params.dateTo,
             });
         } catch (error) {
             console.error("Error fetching orders:", error);

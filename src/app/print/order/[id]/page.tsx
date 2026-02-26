@@ -11,8 +11,9 @@ const DELIVERY_SERVICE_LABELS: Record<string, string> = {
     JT: "J&T",
 };
 
-export default async function PrintOrderReceipt({ params }: { params: { id: string } }) {
-    const order = await OrderRepository.getOrderById(params.id);
+export default async function PrintOrderReceipt({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const order = await OrderRepository.getOrderById(id);
 
     if (!order) {
         redirect("/admin/orders");

@@ -17,12 +17,21 @@ export async function GET(req: NextRequest) {
         const paymentStatus = searchParams.get("paymentStatus") || undefined;
         const searchTerm = searchParams.get("search") || undefined;
 
+        const dateFromStr = searchParams.get("dateFrom");
+        const dateToStr = searchParams.get("dateTo");
+
+        // Parse date strings to full-day boundaries
+        const dateFrom = dateFromStr ? new Date(`${dateFromStr}T00:00:00.000Z`) : undefined;
+        const dateTo = dateToStr ? new Date(`${dateToStr}T23:59:59.999Z`) : undefined;
+
         const result = await OrderService.getOrders({
             page,
             limit,
             status: status as any,
             paymentStatus: paymentStatus as any,
             searchTerm,
+            dateFrom,
+            dateTo,
         });
 
         return NextResponse.json({

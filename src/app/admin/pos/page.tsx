@@ -244,6 +244,7 @@ export default function POSPage() {
                     date: new Date().toLocaleString(),
                     customerName: formData.customerName,
                     customerPhone: formData.customerPhone,
+                    deliveryAddress: formData.deliveryAddress,
                     items: [...cart],
                     deliveryService: formData.deliveryService,
                     subtotal,
@@ -283,6 +284,7 @@ export default function POSPage() {
             `Order: ${receiptData.orderCode}\n` +
             `Date: ${receiptData.date}\n` +
             `Customer: ${receiptData.customerName} (${receiptData.customerPhone})\n` +
+            `Address: ${receiptData.deliveryAddress || '-'}\n` +
             `Delivery Service: ${DELIVERY_SERVICE_LABELS[receiptData.deliveryService as DeliveryService] || '-'}\n` +
             `-------------------\n` +
             receiptData.items.map((i: any) => `${i.nameKm} (${i.size}, ${i.color}) x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`).join('\n') +
@@ -551,6 +553,7 @@ export default function POSPage() {
                                 <div className="flex justify-between"><span>Date:</span> <span>{receiptData.date}</span></div>
                                 <div className="flex justify-between"><span>Customer:</span> <span className="font-bold">{receiptData.customerName}</span></div>
                                 <div className="flex justify-between"><span>Phone:</span> <span>{receiptData.customerPhone}</span></div>
+                                <div className="flex justify-between"><span>Address:</span> <span className="text-right ml-4 break-words max-w-[60%]">{receiptData.deliveryAddress || "-"}</span></div>
                                 <div className="flex justify-between"><span>Delivery Service:</span> <span>{DELIVERY_SERVICE_LABELS[receiptData.deliveryService as DeliveryService] || "-"}</span></div>
                             </div>
 

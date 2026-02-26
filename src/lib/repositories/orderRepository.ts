@@ -181,13 +181,22 @@ export class OrderRepository {
         status?: OrderStatus;
         paymentStatus?: PaymentStatus;
         searchTerm?: string;
+        dateFrom?: Date;
+        dateTo?: Date;
     }) {
-        const { skip, take, status, paymentStatus, searchTerm } = params;
+        const { skip, take, status, paymentStatus, searchTerm, dateFrom, dateTo } = params;
 
         const where: Prisma.OrderWhereInput = {};
 
         if (status) where.orderStatus = status;
         if (paymentStatus) where.paymentStatus = paymentStatus;
+
+        if (dateFrom || dateTo) {
+            where.createdAt = {
+                ...(dateFrom && { gte: dateFrom }),
+                ...(dateTo && { lte: dateTo }),
+            };
+        }
 
         if (searchTerm) {
             where.OR = [
@@ -250,6 +259,18 @@ export class OrderRepository {
                         }
                     }
                 },
+                paymentSlips: true,
+            },
+        });
+    }
+
+    static async getOrdersByIds(ids: string[]) {
+        return prisma.order.findMany({
+            where: { id: { in: ids } },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                customer: true,
+                items: true,
                 paymentSlips: true,
             },
         });
