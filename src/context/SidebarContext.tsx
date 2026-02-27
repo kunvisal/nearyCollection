@@ -10,6 +10,7 @@ type SidebarContextType = {
   toggleSidebar: () => void;
   toggleMobileSidebar: () => void;
   setIsHovered: (isHovered: boolean) => void;
+  setIsMobileOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setActiveItem: (item: string | null) => void;
   toggleSubmenu: (item: string) => void;
 };
@@ -74,6 +75,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
         toggleSidebar,
         toggleMobileSidebar,
         setIsHovered,
+        setIsMobileOpen,
         setActiveItem,
         toggleSubmenu,
       }}

@@ -4,20 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
-import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
-} from "../icons/index";
-import SidebarWidget from "./SidebarWidget";
+import { ChevronDownIcon, HorizontaLDots } from "../icons/index";
+import { LayoutDashboard, MonitorSmartphone, ShoppingBag, PackageOpen, Truck, ListTree, Tags, Settings, LogOut, TagsIcon } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -28,62 +16,62 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
+    icon: <LayoutDashboard size={20} />,
     name: "Dashboard",
     path: "/admin",
   },
   {
-    icon: <PageIcon />,
+    icon: <MonitorSmartphone size={20} />,
     name: "POS",
     path: "/admin/pos",
   },
   {
-    icon: <BoxCubeIcon />,
-    name: "Packaging",
-    path: "/admin/packaging",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Delivery",
-    path: "/admin/delivery",
-  },
-  {
-    icon: <CalenderIcon />, // Using existing icon or change later
+    icon: <ShoppingBag size={20} />,
     name: "Orders",
     path: "/admin/orders",
   },
   {
-    icon: <ListIcon />,
-    name: "Categories",
-    path: "/admin/categories",
-  },
-  {
-    icon: <BoxCubeIcon />,
+    icon: <Tags size={20} />,
     name: "Products",
     path: "/admin/products",
   },
   {
-    icon: <ListIcon />, // Or another suitable icon
+    icon: <ListTree size={20} />,
+    name: "Categories",
+    path: "/admin/categories",
+  },
+  {
+    icon: <TagsIcon size={20} />,
     name: "Inventory Alerts",
     path: "/admin/inventory",
+  },
+  {
+    icon: <PackageOpen size={20} />,
+    name: "Packaging",
+    path: "/admin/packaging",
+  },
+  {
+    icon: <Truck size={20} />,
+    name: "Delivery",
+    path: "/admin/delivery",
   },
 ];
 
 const othersItems: NavItem[] = [
   {
-    icon: <PlugInIcon />,
+    icon: <Settings size={20} />,
     name: "Settings",
     path: "/admin/settings",
   },
   {
-    icon: <UserCircleIcon />,
+    icon: <LogOut size={20} />,
     name: "Return to Shop",
     path: "/",
   },
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, setIsMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
@@ -129,6 +117,12 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 href={nav.path}
+                onClick={(e) => {
+                  if (isMobileOpen) {
+                    // Slight delay to allow navigation to start smoothly
+                    setTimeout(() => setIsMobileOpen(false), 50);
+                  }
+                }}
                 className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
                   }`}
               >
@@ -349,7 +343,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );
