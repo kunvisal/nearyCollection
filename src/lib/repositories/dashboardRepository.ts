@@ -112,6 +112,8 @@ export class DashboardRepository {
             profit: metrics.profit
         })).sort((a, b) => a.date.localeCompare(b.date));
 
+        const totalProfit = dailyRevenue.reduce((sum, day) => sum + day.profit, 0);
+
         // Monthly Sales (orders count per month for current year)
         const currentYear = today.getFullYear();
         const startOfYear = new Date(currentYear, 0, 1);
@@ -227,6 +229,7 @@ export class DashboardRepository {
             totalCustomers,
             totalOrders,
             totalRevenue,
+            totalProfit,
             recentOrders: serializedOrders,
         };
     }

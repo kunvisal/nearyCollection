@@ -35,7 +35,7 @@ export default function StatisticsChart({ dailyRevenue, startDate, endDate }: St
 
     const fp = flatpickr(datePickerRef.current, {
       mode: "range",
-      static: true,
+      position: "auto right",
       monthSelectorType: "static",
       dateFormat: "Y-m-d", // Use a predictable format for URLs
       altFormat: "M d",

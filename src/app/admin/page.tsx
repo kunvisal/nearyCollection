@@ -33,6 +33,7 @@ export default async function Ecommerce({
         totalCustomers={metrics.totalCustomers}
         totalOrders={metrics.totalOrders}
         totalRevenue={metrics.totalRevenue}
+        totalProfit={metrics.totalProfit}
       />
 
       {/* Middle Row: Trends */}

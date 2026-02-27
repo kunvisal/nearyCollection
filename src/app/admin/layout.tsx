@@ -39,17 +39,21 @@ function AdminLayoutContent({
   );
 }
 
+import { SessionProvider } from "next-auth/react";
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <ToastProvider>
-      <SidebarProvider>
-        <AdminLayoutContent>{children}</AdminLayoutContent>
-      </SidebarProvider>
-    </ToastProvider>
+    <SessionProvider>
+      <ToastProvider>
+        <SidebarProvider>
+          <AdminLayoutContent>{children}</AdminLayoutContent>
+        </SidebarProvider>
+      </ToastProvider>
+    </SessionProvider>
   );
 }
 
