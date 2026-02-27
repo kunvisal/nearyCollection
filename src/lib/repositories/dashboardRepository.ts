@@ -1,73 +1,115 @@
 import prisma from "../prisma";
 
 export class DashboardRepository {
-    static async getMetrics() {
-        // Total customers
-        const totalCustomers = await prisma.customer.count();
+    static async getMetrics(startDateArg?: string | Date, endDateArg?: string | Date) {
+        // Resolve date boundaries
+        const today = new Date();
+        const endDate = endDateArg ? new Date(endDateArg) : new Date(today);
+        if (!endDateArg) endDate.setHours(23, 59, 59, 999);
 
-        // Total orders (excluding cancelled)
-        const totalOrders = await prisma.order.count({
+        const startDate = startDateArg ? new Date(startDateArg) : new Date(today);
+        if (!startDateArg) {
+            startDate.setDate(today.getDate() - 6);
+            startDate.setHours(0, 0, 0, 0);
+        }
+
+        // Calculate total days in range to build map correctly
+        const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const daysToMap = diffDays === 0 ? 1 : diffDays;
+
+        // Total customers
+        const totalCustomers = await prisma.customer.count({
             where: {
-                orderStatus: { not: 'CANCELLED' }
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
             }
         });
 
-        // Total revenue (sum of totally paid orders)
+        // Total orders (excluding cancelled) within date range
+        const totalOrders = await prisma.order.count({
+            where: {
+                orderStatus: { not: 'CANCELLED' },
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
+            }
+        });
+
+        // Total revenue (sum of totally paid orders) within date range
         const revenueResult = await prisma.order.aggregate({
             _sum: {
                 total: true
             },
             where: {
                 paymentStatus: 'PAID',
-                orderStatus: { not: 'CANCELLED' }
+                orderStatus: { not: 'CANCELLED' },
+                createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                }
             }
         });
 
         const totalRevenue = revenueResult._sum.total ? Number(revenueResult._sum.total) : 0;
 
-        // Daily Revenue (last 7 days)
-        const today = new Date();
-        const endOfToday = new Date(today);
-        endOfToday.setHours(23, 59, 59, 999);
-
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 6);
-        sevenDaysAgo.setHours(0, 0, 0, 0);
-
+        // Daily Revenue & Profit (in the selected date range)
         const recentPaidOrders = await prisma.order.findMany({
             where: {
                 paymentStatus: 'PAID',
                 orderStatus: { not: 'CANCELLED' },
                 createdAt: {
-                    gte: sevenDaysAgo,
-                    lte: endOfToday
+                    gte: startDate,
+                    lte: endDate
                 }
             },
             select: {
                 createdAt: true,
-                total: true
+                total: true,
+                items: {
+                    select: {
+                        costPriceSnapshot: true,
+                        qty: true,
+                        lineTotal: true
+                    }
+                }
             }
         });
 
         // Group by day string 'YYYY-MM-DD'
-        const revenueByDayMap: Record<string, number> = {};
-        for (let i = 0; i < 7; i++) {
-            const d = new Date(sevenDaysAgo);
+        const metricsByDayMap: Record<string, { revenue: number, profit: number }> = {};
+        for (let i = 0; i < daysToMap; i++) {
+            const d = new Date(startDate);
             d.setDate(d.getDate() + i);
             const dateStr = d.toISOString().split('T')[0];
-            revenueByDayMap[dateStr] = 0;
+            metricsByDayMap[dateStr] = { revenue: 0, profit: 0 };
         }
 
         recentPaidOrders.forEach(order => {
             const dateStr = order.createdAt.toISOString().split('T')[0];
-            if (revenueByDayMap[dateStr] !== undefined) {
-                revenueByDayMap[dateStr] += Number(order.total);
+            if (metricsByDayMap[dateStr] !== undefined) {
+                // Revenue is just the order total
+                metricsByDayMap[dateStr].revenue += Number(order.total);
+
+                // Profit is lineTotal (sale) minus the base cost (costPrice * qty)
+                let orderProfit = 0;
+                order.items.forEach(item => {
+                    const cost = Number(item.costPriceSnapshot) * item.qty;
+                    const saleTotal = Number(item.lineTotal);
+                    orderProfit += (saleTotal - cost);
+                });
+
+                metricsByDayMap[dateStr].profit += orderProfit;
             }
         });
 
-        const dailyRevenue = Object.entries(revenueByDayMap).map(([date, revenue]) => ({
+        const dailyRevenue = Object.entries(metricsByDayMap).map(([date, metrics]) => ({
             date,
-            revenue
+            revenue: metrics.revenue,
+            profit: metrics.profit
         })).sort((a, b) => a.date.localeCompare(b.date));
 
         // Monthly Sales (orders count per month for current year)

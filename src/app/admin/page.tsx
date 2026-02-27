@@ -15,8 +15,16 @@ export const metadata: Metadata = {
 // Next.js config to force dynamic rendering for real-time dashboard data
 export const dynamic = "force-dynamic";
 
-export default async function Ecommerce() {
-  const metrics = await DashboardService.getDashboardMetrics();
+export default async function Ecommerce({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const resolvedParams = await searchParams;
+  const from = resolvedParams.from as string | undefined;
+  const to = resolvedParams.to as string | undefined;
+
+  const metrics = await DashboardService.getDashboardMetrics(from, to);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -30,7 +38,11 @@ export default async function Ecommerce() {
       {/* Middle Row: Trends */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
         <div className="md:col-span-8">
-          <StatisticsChart dailyRevenue={metrics.dailyRevenue} />
+          <StatisticsChart
+            dailyRevenue={metrics.dailyRevenue}
+            startDate={from}
+            endDate={to}
+          />
         </div>
         <div className="md:col-span-4">
           <MonthlySalesChart monthlySales={metrics.monthlySales} />
