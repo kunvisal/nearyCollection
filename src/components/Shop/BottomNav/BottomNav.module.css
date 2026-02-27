@@ -1,37 +1,136 @@
-.bottomNav {
+.bottomNavContainer {
     position: fixed;
-    bottom: 0;
+    bottom: 2rem;
     left: 0;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0, 0, 0, 0.05);
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
     align-items: center;
-    padding: 0.75rem 0;
+    gap: 1rem;
     z-index: 50;
-    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+    /* Allow clicking through the container */
+}
+
+/* Re-enable pointer events for clickable inner elements */
+.navPill,
+.cartBtn {
+    pointer-events: auto;
+}
+
+.navPill {
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.75);
+    /* Increased opacity from 0.65 to 0.75 */
+    backdrop-filter: blur(20px);
+    /* Stronger blur */
+    -webkit-backdrop-filter: blur(20px);
+    /* Safari support */
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    /* Stronger shadow to make it pop, plus top highlight for 3D feel */
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.15),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    gap: 0.5rem;
 }
 
 .navItem {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: #64748b; /* Slate 500 */
-    font-size: 0.75rem;
-    font-weight: 500;
-    transition: color 0.2s ease;
+    color: #94a3b8;
+    /* Slate 400 */
+    padding: 0.6rem 0.8rem;
+    border-radius: 9999px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navItem:hover {
+    color: #475569;
 }
 
 .navItem.active {
-    color: #ec4899; /* Pink 500 - Primary Brand Color */
+    background-color: #f1f5f9;
+    /* Slate 100 */
+    color: #0f172a;
+    /* Slate 900 for high contrast */
 }
 
 .icon {
+    width: 22px;
+    height: 22px;
+}
+
+.label {
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cartBtn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    /* 64px */
+    height: 4rem;
+    /* 64px */
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.75);
+    /* Increased opacity from 0.65 to 0.75 */
+    backdrop-filter: blur(20px);
+    /* Stronger blur */
+    -webkit-backdrop-filter: blur(20px);
+    /* Safari support */
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.15),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+    color: #0f172a;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncier hover transition */
+    border: none;
+    cursor: pointer;
+}
+
+.cartBtn:hover {
+    transform: scale(1.08) translateY(-4px);
+    /* Lift up slightly on hover */
+    box-shadow:
+        0 14px 30px -5px rgba(0, 0, 0, 0.2),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    /* Intensify shadow on hover */
+}
+
+.cartBtn .icon {
     width: 24px;
     height: 24px;
-    margin-bottom: 4px;
+}
+
+.cartBadge {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.9rem;
+    background-color: #ef4444;
+    /* Red 500 */
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
 }
