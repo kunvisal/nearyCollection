@@ -1,0 +1,35 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+Error: Cannot apply unknown utility class `!`
+    [2m[at onInvalidCandidate (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:21:1511)][0m
+    [2m[at Te (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:16:36038)][0m
+    [2m[at D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:21:355][0m
+    [2m[at Tr (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:3:1718)][0m
+    [2m[at _ (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:3:1377)][0m
+    [2m[at Se (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:21:172)][0m
+    [2m[at ln (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:38:294)][0m
+    [2m[at async sn (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\tailwindcss\dist\lib.js:38:631)][0m
+    [2m[at async Qr (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\@tailwindcss\node\dist\index.js:10:3385)][0m
+    [2m[at async I (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\@tailwindcss\postcss\dist\index.js:10:3978)][0m
+
+> Build error occurred
+Error: Turbopack build failed with 1 errors:
+./src/app/globals.css
+Error evaluating Node.js code
+CssSyntaxError: tailwindcss: D:\NearyCollection\free-nextjs-admin-dashboard-main\src\app\globals.css:1:1: Cannot apply unknown utility class `!`
+    at Input.error (node_modules/postcss/lib/input.js:135:16) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\node_modules_fe693df6._.js:4651:22]
+    at Root.error (node_modules/postcss/lib/node.js:146:32) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\node_modules_fe693df6._.js:928:38]
+    [at Object.Once (D:\NearyCollection\free-nextjs-admin-dashboard-main\node_modules\@tailwindcss\postcss\dist\index.js:10:6912)]
+    at async LazyResult.runAsync (node_modules/postcss/lib/lazy-result.js:293:11) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\node_modules_fe693df6._.js:6206:21]
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\[root-of-the-server]__6d51cb5d._.js:172:36]
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\[root-of-the-server]__44695d76._.js:443:31]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at async transform (turbopack:///[turbopack-node]/transforms/postcss.ts:70:34) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\[root-of-the-server]__6d51cb5d._.js:172:36])
+    at async run (turbopack:///[turbopack-node]/ipc/evaluate.ts:92:23) [D:\NearyCollection\free-nextjs-admin-dashboard-main\.next\build\chunks\[root-of-the-server]__44695d76._.js:443:31])

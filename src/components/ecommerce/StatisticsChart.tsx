@@ -81,7 +81,7 @@ export default function StatisticsChart({ dailyRevenue, startDate, endDate }: St
       markers: {
       },
     },
-    colors: ["#465FFF", "#10B981"], // Blue for Revenue, Emerald Green for Profit
+    colors: ["#fb6514", "#10B981"], // Orange for Revenue, Emerald Green for Profit
     chart: {
       fontFamily: "Outfit, sans-serif",
       height: 310,

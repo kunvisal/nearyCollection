@@ -89,7 +89,7 @@ export default function Hero({
                     <div className={styles.avatarContainer}>
                         <div className={styles.avatarWrapper}>
                             <Image
-                                src="/images/logo/nearylogo.jpg" // Default to logo if no profile image provided
+                                src="/images/logo/neary-logo-shop.svg" // Default to logo if no profile image provided
                                 alt="Profile"
                                 fill
                                 className={styles.avatar}

@@ -25,7 +25,7 @@ interface MonthlySalesChartProps {
 
 export default function MonthlySalesChart({ monthlySales }: MonthlySalesChartProps) {
   const options: ApexOptions = {
-    colors: ["#465fff"],
+    colors: ["#fb6514"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
