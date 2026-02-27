@@ -1,4 +1,5 @@
 import { Outfit } from 'next/font/google';
+import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 import "flatpickr/dist/flatpickr.css";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${outfit.className} dark:bg-gray-900`} suppressHydrationWarning={true}>
+        <NextTopLoader color="#3758F9" showSpinner={false} />
         <ThemeProvider>
           {children}
         </ThemeProvider>
