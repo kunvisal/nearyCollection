@@ -25,6 +25,121 @@ export class DashboardRepository {
 
         const totalRevenue = revenueResult._sum.total ? Number(revenueResult._sum.total) : 0;
 
+        // Daily Revenue (last 7 days)
+        const today = new Date();
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
+
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 6);
+        sevenDaysAgo.setHours(0, 0, 0, 0);
+
+        const recentPaidOrders = await prisma.order.findMany({
+            where: {
+                paymentStatus: 'PAID',
+                orderStatus: { not: 'CANCELLED' },
+                createdAt: {
+                    gte: sevenDaysAgo,
+                    lte: endOfToday
+                }
+            },
+            select: {
+                createdAt: true,
+                total: true
+            }
+        });
+
+        // Group by day string 'YYYY-MM-DD'
+        const revenueByDayMap: Record<string, number> = {};
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(sevenDaysAgo);
+            d.setDate(d.getDate() + i);
+            const dateStr = d.toISOString().split('T')[0];
+            revenueByDayMap[dateStr] = 0;
+        }
+
+        recentPaidOrders.forEach(order => {
+            const dateStr = order.createdAt.toISOString().split('T')[0];
+            if (revenueByDayMap[dateStr] !== undefined) {
+                revenueByDayMap[dateStr] += Number(order.total);
+            }
+        });
+
+        const dailyRevenue = Object.entries(revenueByDayMap).map(([date, revenue]) => ({
+            date,
+            revenue
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Monthly Sales (orders count per month for current year)
+        const currentYear = today.getFullYear();
+        const startOfYear = new Date(currentYear, 0, 1);
+
+        const thisYearOrders = await prisma.order.findMany({
+            where: {
+                orderStatus: { not: 'CANCELLED' },
+                createdAt: {
+                    gte: startOfYear,
+                    lte: new Date(currentYear, 11, 31, 23, 59, 59, 999)
+                }
+            },
+            select: { createdAt: true }
+        });
+
+        const salesByMonthMap: Record<number, number> = {
+            1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0
+        };
+
+        thisYearOrders.forEach(order => {
+            const month = order.createdAt.getMonth() + 1; // 1-12
+            salesByMonthMap[month]++;
+        });
+
+        const monthlySales = Object.entries(salesByMonthMap).map(([month, count]) => ({
+            month: Number(month),
+            count
+        })).sort((a, b) => a.month - b.month);
+
+        // Low stock alerts
+        const lowStockAlerts = await prisma.productVariant.findMany({
+            where: {
+                stockOnHand: {
+                    lte: prisma.productVariant.fields.lowStockThreshold
+                },
+                isActive: true
+            },
+            include: {
+                product: true
+            }
+        });
+
+        const serializedLowStockAlerts = lowStockAlerts.map(alert => ({
+            ...alert,
+            costPrice: Number(alert.costPrice),
+            salePrice: Number(alert.salePrice),
+            discountAmount: Number(alert.discountAmount)
+        }));
+
+        // Pending verifications
+        const pendingVerifications = await prisma.paymentSlip.findMany({
+            where: {
+                verifyStatus: 'PENDING'
+            },
+            include: {
+                order: true
+            }
+        });
+
+        const serializedPendingVerifications = pendingVerifications.map(slip => ({
+            ...slip,
+            order: slip.order ? {
+                ...slip.order,
+                total: Number(slip.order.total),
+                deliveryFee: Number(slip.order.deliveryFee),
+                subtotal: Number(slip.order.subtotal),
+                discount: Number(slip.order.discount)
+            } : undefined
+        }));
+
         // Recent 5 orders
         const recentOrders = await prisma.order.findMany({
             take: 5,
@@ -63,6 +178,10 @@ export class DashboardRepository {
         }));
 
         return {
+            dailyRevenue,
+            monthlySales,
+            lowStockAlerts: serializedLowStockAlerts,
+            pendingVerifications: serializedPendingVerifications,
             totalCustomers,
             totalOrders,
             totalRevenue,

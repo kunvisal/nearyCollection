@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, Phone, CheckCircle2, Search, ArrowRight, User, Loader2 } from "lucide-react";
+import { Package, Phone, CheckCircle2, Search, User, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import Image from "next/image";
 import { useToast } from "@/context/ToastContext";
+import { Modal } from "@/components/ui/modal";
 
 type OrderItem = {
     id: string;
@@ -38,6 +39,7 @@ export default function PackagingWorkflowPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [processingId, setProcessingId] = useState<string | null>(null);
+    const [confirmOrderId, setConfirmOrderId] = useState<string | null>(null);
     const { addToast } = useToast();
 
     const fetchProcessingOrders = async () => {
@@ -59,10 +61,13 @@ export default function PackagingWorkflowPage() {
         fetchProcessingOrders();
     }, []);
 
-    const handleConfirmPackaging = async (orderId: string) => {
-        if (!confirm("Confirm this order is packed and ready for delivery?")) return;
+    const handleConfirmPackaging = async () => {
+        if (!confirmOrderId) return;
 
+        const orderId = confirmOrderId;
+        setConfirmOrderId(null); // Close modal
         setProcessingId(orderId);
+
         try {
             const res = await fetch(`/api/admin/orders/${orderId}`, {
                 method: "PUT",
@@ -199,7 +204,7 @@ export default function PackagingWorkflowPage() {
                             {/* Action Footer */}
                             <div className="p-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
                                 <button
-                                    onClick={() => handleConfirmPackaging(order.id)}
+                                    onClick={() => setConfirmOrderId(order.id)}
                                     disabled={processingId === order.id}
                                     className="px-6 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-75 disabled:cursor-not-allowed text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors w-full sm:w-auto min-w-[160px]"
                                 >
@@ -220,6 +225,33 @@ export default function PackagingWorkflowPage() {
                     ))}
                 </div>
             )}
+
+            {/* Confirmation Modal */}
+            <Modal isOpen={!!confirmOrderId} onClose={() => setConfirmOrderId(null)} className="max-w-[400px] p-6">
+                <div className="flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 dark:bg-blue-900/30 dark:text-blue-500">
+                        <Package className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Confirm Order Packed</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                        Are you sure this order has been fully packed and is ready for delivery? This action will mark it as shipped.
+                    </p>
+                    <div className="flex w-full gap-3">
+                        <button
+                            onClick={() => setConfirmOrderId(null)}
+                            className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleConfirmPackaging}
+                            className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                        >
+                            Yes, Confirm
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
