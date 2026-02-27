@@ -184,8 +184,8 @@ export default function StatisticsChart({ dailyRevenue, startDate, endDate }: St
 
   return (
     <div className="rounded-2xl border border-gray-200 bg-white px-5 pb-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-      <div className="flex flex-col gap-5 mb-6 sm:flex-row sm:justify-between">
-        <div className="w-full">
+      <div className="flex flex-row items-start justify-between gap-5 mb-6">
+        <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Revenue & Profit
           </h3>
@@ -193,7 +193,7 @@ export default function StatisticsChart({ dailyRevenue, startDate, endDate }: St
             Overview for selected date range
           </p>
         </div>
-        <div className="flex items-center gap-3 sm:justify-end">
+        <div className="flex items-center gap-3 shrink-0">
           <div className="relative inline-flex items-center">
             <CalenderIcon className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 lg:left-3 lg:top-1/2 lg:translate-x-0 lg:-translate-y-1/2  text-gray-500 dark:text-gray-400 pointer-events-none z-10" />
             <input
