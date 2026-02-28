@@ -5,8 +5,9 @@ import React from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
-    const categoryId = parseInt(params.slug);
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = await params;
+    const categoryId = parseInt(slug);
 
     let categoryName = "All Products";
     if (!isNaN(categoryId)) {

@@ -19,8 +19,10 @@ export default function ProductGrid({ products = mockProducts }: ProductGridProp
                         <Image
                             src={product.image}
                             alt={product.name}
-                            fill
+                            width={300}
+                            height={400}
                             className={styles.image}
+                            unoptimized={true}
                         />
                     </div>
                     <h3 className={styles.title}>{product.name}</h3>

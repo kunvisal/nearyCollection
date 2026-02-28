@@ -259,6 +259,9 @@ model Settings {
   paymentInstructionWing String          @db.Text
   telegramBotToken       String
   telegramChatId         String
+  contactTelegram        String?
+  contactMessenger       String?
+  contactFacebook        String?
   defaultLanguage        DefaultLanguage @default(KM)
   updatedAt              DateTime        @updatedAt
 

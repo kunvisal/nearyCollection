@@ -45,6 +45,9 @@ export class SettingsRepository {
                 paymentInstructionWing: data.paymentInstructionWing || "",
                 telegramBotToken: data.telegramBotToken || "",
                 telegramChatId: data.telegramChatId || "",
+                contactTelegram: data.contactTelegram || "",
+                contactMessenger: data.contactMessenger || "",
+                contactFacebook: data.contactFacebook || "",
                 defaultLanguage: data.defaultLanguage || "KM",
             }
         });

@@ -5,8 +5,9 @@ import Image from "next/image";
 import styles from "./ProductDetail.module.css";
 import Link from "next/link";
 import { useCartStore } from "@/lib/store/cartStore";
+import { MessageCircle, ShoppingBag, Send } from "lucide-react";
 
-export default function ProductDetail({ product }: { product: any }) {
+export default function ProductDetail({ product, settings }: { product: any, settings?: any }) {
     const { addItem } = useCartStore();
 
     // Group variants by color and size to build selectors
@@ -87,15 +88,15 @@ export default function ProductDetail({ product }: { product: any }) {
 
                 <h1 className={styles.title}>{product.nameKm} {product.nameEn ? `| ${product.nameEn}` : ''}</h1>
 
-                {/* Status / Stock */}
+                {/* Status / Stock (Hidden from customers on UI, just show Out of Stock if unavailable, or SKU) */}
                 {selectedVariant && (
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex items-center justify-between">
                         {isOutOfStock ? (
                             <span className="text-red-500 font-medium text-sm">Out of Stock</span>
                         ) : (
-                            <span className="text-green-600 font-medium text-sm">In Stock ({selectedVariant.stockOnHand} available)</span>
+                            <span className="text-green-600 font-medium text-sm">In Stock</span>
                         )}
-                        {selectedVariant.sku && <span className="text-gray-400 text-xs ml-auto">SKU: {selectedVariant.sku}</span>}
+                        {selectedVariant.sku && <span className="text-gray-400 text-xs text-right">SKU: {selectedVariant.sku}</span>}
                     </div>
                 )}
 
@@ -145,38 +146,106 @@ export default function ProductDetail({ product }: { product: any }) {
                     </div>
                 )}
 
-                {/* Desktop Action Button */}
-                <button
-                    className={`${styles.desktopButton} mt-6 ${isOutOfStock ? 'opacity-50 cursor-not-allowed bg-gray-400 text-white' : 'bg-black text-white hover:bg-gray-800'}`}
-                    onClick={handleAddToCart}
-                    disabled={isOutOfStock || !selectedVariant}
-                >
-                    <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                </button>
-                <div className="mt-4 flex justify-center">
-                    <button onClick={() => window.open('https://t.me/nearycollection', '_blank')} className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 flex items-center gap-1">
-                        Or Order via Telegram
+                {/* Direct Order Actions */}
+                <div className="mt-6 space-y-3">
+                    {/* Primary Order Action - Telegram */}
+                    <button
+                        className={`w-full py-3 px-6 rounded-lg font-medium text-lg flex items-center justify-center gap-2 transition-all ${isOutOfStock
+                            ? 'opacity-50 cursor-not-allowed bg-gray-400 text-white'
+                            : 'bg-[#0088cc] hover:bg-[#0077b5] text-white shadow-md'
+                            }`}
+                        onClick={() => {
+                            if (!isOutOfStock && settings?.contactTelegram) {
+                                // If the token doesn't have t.me/ or http, prepend t.me/
+                                const link = settings.contactTelegram.includes('t.me') || settings.contactTelegram.includes('http')
+                                    ? settings.contactTelegram
+                                    : `https://t.me/${settings.contactTelegram.replace('@', '')}`;
+                                window.open(link, '_blank');
+                            } else if (!isOutOfStock) {
+                                alert("Telegram contact is not set up yet.");
+                            }
+                        }}
+                        disabled={isOutOfStock}
+                    >
+                        <Send className="w-5 h-5" />
+                        <span>Order via Telegram</span>
                     </button>
+
+                    <div className="flex gap-3">
+                        {/* Secondary Order Action - Add to Cart */}
+                        <button
+                            className={`flex-[2] py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all border-2 ${isOutOfStock
+                                ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-400'
+                                : 'border-black text-black hover:bg-black hover:text-white'
+                                }`}
+                            onClick={handleAddToCart}
+                            disabled={isOutOfStock || !selectedVariant}
+                        >
+                            <ShoppingBag className="w-5 h-5" />
+                            <span>Add to Bag</span>
+                        </button>
+
+                        {/* Other Chat Options */}
+                        <div className="flex gap-2 flex-1 items-center justify-end">
+                            {settings?.contactMessenger && (
+                                <button
+                                    onClick={() => window.open(settings.contactMessenger.includes('http') ? settings.contactMessenger : `https://${settings.contactMessenger}`, '_blank')}
+                                    className="w-12 h-12 rounded-full bg-[#00B2FF] hover:bg-[#0099e5] text-white flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+                                    title="Contact via Messenger"
+                                >
+                                    <MessageCircle className="w-6 h-6" />
+                                </button>
+                            )}
+                            {settings?.contactFacebook && (
+                                <button
+                                    onClick={() => window.open(settings.contactFacebook.includes('http') ? settings.contactFacebook : `https://${settings.contactFacebook}`, '_blank')}
+                                    className="w-12 h-12 rounded-full bg-[#1877F2] hover:bg-[#166fe5] text-white flex items-center justify-center shadow-sm transition-transform hover:scale-105"
+                                    title="View Facebook Page"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Sticky Footer for Mobile */}
             <div className={`${styles.footer} md:hidden`}>
-                <button
-                    className={`${styles.chatButton} ${isOutOfStock ? 'opacity-50 cursor-not-allowed bg-gray-400 text-white' : 'bg-black text-white'}`}
-                    onClick={handleAddToCart}
-                    disabled={isOutOfStock || !selectedVariant}
-                >
-                    <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
-                    {!isOutOfStock && (
-                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                    )}
-                </button>
+                <div className="flex gap-2 w-full px-4 py-3 bg-white border-t border-gray-200">
+                    <button
+                        className={`flex-[2] py-2.5 px-4 rounded-lg font-medium text-base flex items-center justify-center gap-2 transition-all ${isOutOfStock
+                            ? 'opacity-50 cursor-not-allowed bg-gray-400 text-white'
+                            : 'bg-[#0088cc] text-white'
+                            }`}
+                        onClick={() => {
+                            if (!isOutOfStock && settings?.contactTelegram) {
+                                const link = settings.contactTelegram.includes('t.me') || settings.contactTelegram.includes('http')
+                                    ? settings.contactTelegram
+                                    : `https://t.me/${settings.contactTelegram.replace('@', '')}`;
+                                window.open(link, '_blank');
+                            }
+                        }}
+                        disabled={isOutOfStock}
+                    >
+                        <Send className="w-5 h-5" />
+                        <span>Telegram</span>
+                    </button>
+
+                    <button
+                        className={`flex-[1] py-2.5 px-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all border-2 ${isOutOfStock
+                            ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-400'
+                            : 'border-black text-black'
+                            }`}
+                        onClick={handleAddToCart}
+                        disabled={isOutOfStock || !selectedVariant}
+                        title="Add to Bag"
+                    >
+                        <ShoppingBag className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
         </div>
     );

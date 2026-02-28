@@ -17,6 +17,9 @@ export default function SettingsPage() {
         paymentInstructionWing: "",
         telegramBotToken: "",
         telegramChatId: "",
+        contactTelegram: "",
+        contactMessenger: "",
+        contactFacebook: "",
         defaultLanguage: "KM"
     });
 
@@ -38,6 +41,9 @@ export default function SettingsPage() {
                     paymentInstructionWing: json.data.paymentInstructionWing || "",
                     telegramBotToken: json.data.telegramBotToken || "",
                     telegramChatId: json.data.telegramChatId || "",
+                    contactTelegram: json.data.contactTelegram || "",
+                    contactMessenger: json.data.contactMessenger || "",
+                    contactFacebook: json.data.contactFacebook || "",
                     defaultLanguage: json.data.defaultLanguage || "KM"
                 });
             }
@@ -190,6 +196,47 @@ export default function SettingsPage() {
                                 placeholder="Wing Number: 012 345 678"
                             />
                             <p className="text-xs text-gray-500 mt-1">Displayed to customers when they select Wing payment at checkout.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Social Contact Links */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Storefront Contact Links</h2>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">These links will be used on the product detail pages for customers to contact you.</p>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Telegram Username or Direct Link</label>
+                            <input
+                                type="text"
+                                name="contactTelegram"
+                                value={formData.contactTelegram}
+                                onChange={handleChange}
+                                placeholder="e.g. t.me/nearycollection or @nearycollection"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Facebook Page Link</label>
+                            <input
+                                type="text"
+                                name="contactFacebook"
+                                value={formData.contactFacebook}
+                                onChange={handleChange}
+                                placeholder="e.g. fb.com/nearycollection"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Messenger Direct Link</label>
+                            <input
+                                type="text"
+                                name="contactMessenger"
+                                value={formData.contactMessenger}
+                                onChange={handleChange}
+                                placeholder="e.g. m.me/nearycollection"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
                         </div>
                     </div>
                 </div>

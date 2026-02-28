@@ -7,5 +7,8 @@ export const updateSettingsSchema = z.object({
     paymentInstructionWing: z.string().optional(),
     telegramBotToken: z.string().optional(),
     telegramChatId: z.string().optional(),
+    contactTelegram: z.string().optional(),
+    contactMessenger: z.string().optional(),
+    contactFacebook: z.string().optional(),
     defaultLanguage: z.enum(["KM", "EN"]).optional(),
 });

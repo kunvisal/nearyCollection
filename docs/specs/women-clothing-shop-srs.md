@@ -64,7 +64,8 @@
 
 * Product must have variants tracked by **Size + Color**
 * Each variant includes **SKU, Barcode, CostPrice, SalePrice, Discount, StockOnHand**
-* If available stock = (StockOnHand - ReservedQty) <= 0 → disable "Add to cart"
+* Stock availability is hidden from customers; products remain visible and orderable regardless of stock.
+* Manual control over product visibility if item is discontinued or out of stock and should not be shown.
 * **No pre-order** allowed
 
 ### Delivery (Delivery only)
@@ -125,7 +126,10 @@
 
 * Multi images
 * Variant selection required (size+color)
-* Show price/discount/stock availability
+* Show price/discount (Hide stock availability, no rating stars, no wishlist)
+* Primary Action: Contact seller via Telegram for direct order
+* Secondary Action: Add to cart
+* Direct Chat Options: Support Messenger, Facebook, Telegram
 * Size guide section
 
 ### FR-03 Cart
@@ -230,13 +234,14 @@
 
 1. As a customer, I can browse products by category so I can find items quickly.
 2. As a customer, I can search products by name so I can locate specific items.
-3. As a customer, I can filter by size/color and in-stock so I don't waste time.
+3. As a customer, I can filter by size/color so I don't waste time (in-stock filter removed as stock is hidden).
 4. As a customer, I can view product details and select size/color so I buy the correct variant.
-5. As a customer, I can add items to cart and edit quantities so I can manage my order.
-6. As a customer, I can checkout as guest with delivery info so I can order without login.
-7. As a customer, I can choose COD/ABA/Wing so I can pay my preferred way.
-8. As a customer, I can upload ABA/Wing slip so payment can be verified.
-9. As a customer, I can track my order by code+phone so I know delivery progress.
+5. As a customer, I can easily contact the seller directly via Telegram, Messenger, or Facebook for specific items.
+6. As a customer, I can optionally add items to cart and edit quantities if I want to buy multiple items.
+7. As a customer, I can checkout as guest with delivery info so I can order without login.
+8. As a customer, I can choose COD/ABA/Wing so I can pay my preferred way.
+9. As a customer, I can upload ABA/Wing slip so payment can be verified.
+10. As a customer, I can track my order by code+phone so I know delivery progress.
 
 ## Epic B — Admin/Staff Orders
 
@@ -521,6 +526,9 @@
 | `PaymentInstructionWing` | text | Wing payment instructions |
 | `TelegramBotToken` | string | Telegram bot token (encrypted) |
 | `TelegramChatId` | string | Telegram chat ID |
+| `ContactTelegram` | string | Telegram contact username/link |
+| `ContactMessenger` | string | Messenger contact link |
+| `ContactFacebook` | string | Facebook Page link |
 | `DefaultLanguage` | enum | km/en |
 | `UpdatedAt` | datetime | Last update timestamp |
 

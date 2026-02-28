@@ -38,8 +38,10 @@ export default function ProductRow({ title, seeAllLink = "/products", products =
                             <Image
                                 src={product.image}
                                 alt={product.name}
-                                fill
+                                width={300} // Responsive placeholder container bounds
+                                height={400} // This will scale via CSS `height: auto`
                                 className={styles.image}
+                                unoptimized={true} // Allow natural sizes from ext sources
                             />
                         </div>
                         <div className={styles.productName}>{product.name}</div>

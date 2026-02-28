@@ -1,5 +1,6 @@
 import BottomNav from "@/components/Shop/BottomNav/BottomNav";
 import CartDrawer from "@/components/Shop/CartDrawer/CartDrawer";
+import AppHeader from "@/components/Shop/Header/AppHeader";
 import React from "react";
 
 export default function ShopLayout({
@@ -10,6 +11,7 @@ export default function ShopLayout({
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <main className="w-full md:max-w-3xl lg:max-w-6xl mx-auto min-h-screen bg-white shadow-xl overflow-hidden relative">
+                <AppHeader />
                 {children}
             </main>
 

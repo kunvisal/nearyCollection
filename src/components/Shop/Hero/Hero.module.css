@@ -50,28 +50,26 @@
     margin-top: -3rem;
     /* Negative margin to overlap cover */
     margin-bottom: 0;
-    /* Remove bottom margin */
     position: relative;
     z-index: 10;
     flex-shrink: 0;
-    /* Don't shrink avatar */
-    width: 6rem;
+    width: 5rem;
     /* Explicit width for container */
-    height: 6rem;
+    height: 5rem;
     /* Explicit height to match wrapper */
 }
 
 .avatarWrapper {
-    width: 6rem;
-    height: 6rem;
+    width: 5rem;
+    height: 5rem;
     border-radius: 50%;
     border: 3px solid white;
     /* Inner Gap */
     overflow: hidden;
     position: relative;
     background-color: white;
-    box-shadow: 0 0 0 2px #0866FF;
-    /* Blue Story Ring */
+    box-shadow: 0 0 0 2px #0088cc;
+    /* Telegram Blue Ring instead of FB Blue */
 }
 
 .avatar {
@@ -94,15 +92,20 @@
 
 /* Removed .info */
 
+.titleArea {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 1rem;
+}
+
 .title {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #111827;
-    margin-bottom: 0;
-    line-height: 1;
+    margin-bottom: 0.1rem;
+    line-height: 1.2;
     margin-top: 0;
-    padding-top: 5px;
-    /* Push down to visually center with the overlap avatar */
 }
 
 .subtitle {
@@ -126,11 +129,11 @@
     /* Center align buttons */
 }
 
-.actionBtn {
+.telegramBtn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.6rem 1.25rem;
     border-radius: 0.5rem;
     font-weight: 600;
     font-size: 0.9rem;
@@ -138,151 +141,41 @@
     flex: 1;
     justify-content: center;
     min-width: 120px;
+    background-color: #E4E6EB;
+    /* Facebook primary standard */
+    color: #050505;
+    border: none;
+    cursor: pointer;
 }
 
-.primaryBtn {
+.telegramBtn:hover {
+    background-color: #d1d5db;
+}
+
+.messengerBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    flex: 1;
+    justify-content: center;
+    min-width: 120px;
     background-color: #006AFF;
     /* Messenger Blue */
     color: white;
+    border: none;
+    cursor: pointer;
 }
 
-.primaryBtn:hover {
+.messengerBtn:hover {
     background-color: #0056ce;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.secondaryBtn {
-    background-color: #E4E6EB;
-    color: #050505;
-}
-
-.secondaryBtn:hover {
-    background-color: #d1d5db;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.socialRow {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    /* Center align icons */
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
-    width: 100%;
-    max-width: 100%;
-}
-
-.socialIcn {
-    color: #4b5563;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    /* Bouncy transition */
-    padding: 0.5rem;
-    border-radius: 50%;
-    background-color: #f9fafb;
-    position: relative;
-    overflow: hidden;
-}
-
-.socialIcn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.3s ease, height 0.3s ease;
-}
-
-.socialIcn:hover {
-    color: var(--hover-color);
-    transform: translateY(-3px) scale(1.15);
-    /* Enhanced interaction */
-    background-color: white;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.socialIcn:hover::after {
-    width: 100%;
-    height: 100%;
 }
 
 
-/* Contact Info Section */
-.contactSection {
-    width: 100%;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid #e5e7eb;
-}
-
-.contactTitle {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 0.5rem;
-}
-
-.socialList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.contactItem {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    color: inherit;
-    transition: background-color 0.2s;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    margin: 0 -0.5rem;
-    /* Negative margin to align with text */
-}
-
-.contactItem:hover {
-    background-color: #f3f4f6;
-}
-
-.iconCircle {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background-color: #f3f4f6;
-    /* Gray background for icon */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #374151;
-    flex-shrink: 0;
-}
-
-.contactItem:hover .iconCircle {
-    background-color: #e5e7eb;
-}
-
-.contactText {
-    display: flex;
-    flex-direction: column;
-}
-
-.contactLabel {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #111827;
-    word-break: break-word;
-}
-
-.contactType {
-    font-size: 0.8rem;
-    color: #6b7280;
-}
 
 @media (min-width: 768px) {
     .container {

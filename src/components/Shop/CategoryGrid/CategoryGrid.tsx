@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./CategoryGrid.module.css";
-import { GridIcon } from "../../../icons"; // Import at least one icon for default
 
 interface CategoryItem {
     id: number;
@@ -19,12 +18,11 @@ interface CategoryGridProps {
 export default function CategoryGrid({ categories = [] }: CategoryGridProps) {
     // Prepend 'All' category
     const displayCategories = [
-        { id: 0, name: "All", icon: <GridIcon />, slug: "all" },
+        { id: 0, name: "All", slug: "all" },
         ...categories.map(cat => ({
             id: cat.id,
             name: cat.nameEn || cat.nameKm,
-            icon: <GridIcon />, // We can customize icons later based on category name
-            slug: cat.id.toString(), // Use ID as slug for now, or add slug field
+            slug: cat.id.toString(),
         }))
     ];
 
@@ -34,9 +32,8 @@ export default function CategoryGrid({ categories = [] }: CategoryGridProps) {
                 <Link
                     href={cat.slug === 'all' ? '/' : `/category/${cat.id}`}
                     key={`cat-${cat.id}`}
-                    className={`${styles.categoryItem} ${cat.slug === 'all' ? styles.active : ''}`}
+                    className={`${styles.categoryPill} ${cat.slug === 'all' ? styles.active : ''}`}
                 >
-                    <span className={styles.icon}>{cat.icon}</span>
                     <span className={styles.label}>{cat.name}</span>
                 </Link>
             ))}
