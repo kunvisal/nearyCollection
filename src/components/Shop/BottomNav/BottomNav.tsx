@@ -3,13 +3,19 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Heart, Bell, ShoppingCart } from "lucide-react";
+import { Home, Search, Heart, User, ShoppingCart } from "lucide-react";
 import styles from "./BottomNav.module.css";
 import { useCartStore } from "@/lib/store/cartStore";
 
 export default function BottomNav() {
     const pathname = usePathname();
     const { setIsDrawerOpen, getCartCount } = useCartStore();
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const cartCount = getCartCount();
 
     const isActive = (path: string) => pathname === path;
@@ -29,9 +35,9 @@ export default function BottomNav() {
                     <Heart className={styles.icon} fill={isActive("/favorites") ? "currentColor" : "none"} strokeWidth={isActive("/favorites") ? 2 : 1.5} />
                     {isActive("/favorites") && <span className={styles.label}>Favorites</span>}
                 </Link>
-                <Link href="/notifications" className={`${styles.navItem} ${isActive("/notifications") ? styles.active : ""}`}>
-                    <Bell className={styles.icon} fill={isActive("/notifications") ? "currentColor" : "none"} strokeWidth={isActive("/notifications") ? 2 : 1.5} />
-                    {isActive("/notifications") && <span className={styles.label}>Alerts</span>}
+                <Link href="/admin" className={`${styles.navItem} ${isActive("/admin") ? styles.active : ""}`}>
+                    <User className={styles.icon} fill={isActive("/admin") ? "currentColor" : "none"} strokeWidth={isActive("/admin") ? 2 : 1.5} />
+                    {isActive("/admin") && <span className={styles.label}>Admin</span>}
                 </Link>
             </nav>
 
@@ -41,7 +47,7 @@ export default function BottomNav() {
                 aria-label="Cart"
             >
                 <ShoppingCart className={styles.icon} strokeWidth={1.5} />
-                {cartCount > 0 && (
+                {isMounted && cartCount > 0 && (
                     <span className={styles.cartBadge}>
                         {cartCount}
                     </span>

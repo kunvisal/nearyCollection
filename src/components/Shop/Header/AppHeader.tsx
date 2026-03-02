@@ -8,7 +8,7 @@ export default function AppHeader() {
         <header className={styles.header}>
             <div className={styles.logoContainer}>
                 <Link href="/" className={styles.logoLink}>
-                    <span className={styles.logoText}>Shopline</span>
+                    <span className={styles.logoText}>Neary Collection</span>
                 </Link>
             </div>
             <div className={styles.actions}>

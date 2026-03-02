@@ -1,8 +1,0 @@
-
-> free-nextjs-admin-dashboard@2.2.2 build
-> next build
-
-   ▲ Next.js 16.0.10 (Turbopack)
-   - Environments: .env
-
-   Creating an optimized production build ...
