@@ -3,7 +3,7 @@ import { ImageService } from "@/lib/services/imageService";
 import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/authOptions";
-
+import { revalidatePath } from "next/cache";
 export async function DELETE(
     req: NextRequest,
     context: { params: Promise<{ id: string }> }
@@ -16,6 +16,7 @@ export async function DELETE(
 
         const params = await context.params;
         await ImageService.deleteImage(params.id);
+        revalidatePath("/", "layout");
         return successResponse({ deleted: true });
     } catch (error: any) {
         return errorResponse(error.message, 500);

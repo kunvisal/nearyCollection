@@ -4,6 +4,7 @@ import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/authOptions";
+import { revalidatePath } from "next/cache";
 
 export async function POST(
     req: NextRequest,
@@ -18,6 +19,7 @@ export async function POST(
         const params = await context.params;
         const body = await req.json();
         const image = await ImageService.addImage(params.id, body);
+        revalidatePath("/", "layout");
         return successResponse(image, 201);
     } catch (error: any) {
         if (error instanceof z.ZodError) {
