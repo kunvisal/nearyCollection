@@ -25,7 +25,7 @@ export default function AuthLayout({
                   <Image
                     width={231}
                     height={48}
-                    src="./images/logo/neary-auth-logo.svg"
+                    src="/images/logo/neary-auth-logo.svg"
                     alt="Logo"
                   />
                 </Link>

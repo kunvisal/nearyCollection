@@ -4,6 +4,7 @@ import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/authOptions";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: NextRequest) {
     try {
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
 
         const body = await req.json();
         const product = await ProductService.createProduct(body);
+        revalidatePath("/", "layout");
         return successResponse(product, 201);
     } catch (error: any) {
         if (error instanceof z.ZodError) {

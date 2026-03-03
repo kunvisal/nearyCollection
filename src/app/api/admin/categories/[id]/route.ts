@@ -4,6 +4,7 @@ import { successResponse, errorResponse } from "@/lib/utils/apiResponse";
 import { z } from "zod";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth/authOptions";
+import { revalidatePath } from "next/cache";
 
 export async function GET(
     req: NextRequest,
@@ -42,6 +43,7 @@ export async function PUT(
 
         const body = await req.json();
         const category = await CategoryService.updateCategory(id, body);
+        revalidatePath("/", "layout");
         return successResponse(category);
     } catch (error: any) {
         if (error instanceof z.ZodError) {
@@ -66,6 +68,7 @@ export async function DELETE(
         if (isNaN(id)) return errorResponse("Invalid ID", 400);
 
         await CategoryService.deleteCategory(id);
+        revalidatePath("/", "layout");
         return successResponse({ deleted: true });
     } catch (error: any) {
         return errorResponse(error.message, error.message.includes("not found") ? 404 : 500);
