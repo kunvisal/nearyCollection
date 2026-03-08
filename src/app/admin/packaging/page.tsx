@@ -32,6 +32,15 @@ type Order = {
     shippingAddress: any;
     note?: string;
     items: OrderItem[];
+    paymentMethod: string;
+    paymentStatus: string;
+    deliveryService?: string;
+};
+
+const DELIVERY_SERVICES: Record<string, string> = {
+    JALAT: "JALAT Logistics",
+    VET: "VET (វីរប៊ុនថាំ)",
+    JT: "J&T Express"
 };
 
 export default function PackagingWorkflowPage() {
@@ -167,9 +176,58 @@ export default function PackagingWorkflowPage() {
                                 </div>
                             </div>
 
+                            {/* Customer & Delivery Details */}
+                            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white dark:bg-gray-800">
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-2">Payment & Delivery</h4>
+                                    <div className="space-y-2.5 text-sm mt-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Method</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                            <span className="font-bold text-gray-900 dark:text-white">{order.paymentMethod}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Service</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                            <span className="font-bold text-gray-900 dark:text-white">
+                                                {order.deliveryService ? (DELIVERY_SERVICES[order.deliveryService] || order.deliveryService) : 'None'}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Status</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                                order.paymentStatus === 'UNPAID' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                                }`}>
+                                                {order.paymentStatus || 'UNKNOWN'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-2">Customer Details</h4>
+                                    <div className="space-y-2.5 text-sm mt-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Phone</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                            <span className="font-bold text-gray-900 dark:text-white">{order.customer.phone}</span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap mt-0.5">Address</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600 mt-2.5"></div>
+                                            <span className="font-bold text-gray-900 dark:text-white text-right max-w-[65%]" title={order.shippingAddress?.detailedAddress}>
+                                                {order.shippingAddress?.detailedAddress || 'No address provided'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Items List */}
                             <div className="p-4 flex-1">
-                                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Items to Pack</h4>
+                                <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">Items to Pack</h4>
                                 <div className="space-y-3">
                                     {order.items && order.items.map(item => (
                                         <div key={item.id} className="flex gap-3 items-center">
