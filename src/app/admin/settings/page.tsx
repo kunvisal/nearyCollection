@@ -146,7 +146,7 @@ export default function SettingsPage() {
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phnom Penh</label>
                             <input
                                 type="number"
-                                step="0.5"
+                                step="0.01"
                                 min="0"
                                 name="deliveryFeePP"
                                 value={formData.deliveryFeePP}
@@ -158,7 +158,7 @@ export default function SettingsPage() {
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Provinces</label>
                             <input
                                 type="number"
-                                step="0.5"
+                                step="0.01"
                                 min="0"
                                 name="deliveryFeeProvince"
                                 value={formData.deliveryFeeProvince}

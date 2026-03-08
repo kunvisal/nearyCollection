@@ -35,6 +35,11 @@ type Order = {
     paymentMethod: string;
     paymentStatus: string;
     deliveryService?: string;
+    subtotal: number;
+    deliveryFee: number;
+    discount: number;
+    total: number;
+    isFreeDelivery: boolean;
 };
 
 const DELIVERY_SERVICES: Record<string, string> = {
@@ -221,6 +226,41 @@ export default function PackagingWorkflowPage() {
                                                 {order.shippingAddress?.detailedAddress || 'No address provided'}
                                             </span>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Price Information */}
+                            <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                                <h4 className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wider mb-2">Price Summary</h4>
+                                <div className="space-y-2.5 text-sm mt-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Subtotal</span>
+                                        <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                        <span className="font-medium text-gray-900 dark:text-white">${Number(order.subtotal || 0).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Delivery</span>
+                                        <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                        <span className="font-medium text-gray-900 dark:text-white">
+                                            {order.isFreeDelivery ? (
+                                                <span className="text-green-600 dark:text-green-400 font-bold text-xs uppercase bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded">Free</span>
+                                            ) : (
+                                                `$${Number(order.deliveryFee || 0).toFixed(2)}`
+                                            )}
+                                        </span>
+                                    </div>
+                                    {Number(order.discount) > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">Discount</span>
+                                            <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                            <span className="font-medium text-red-600 dark:text-red-400">-${Number(order.discount).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <span className="text-gray-900 dark:text-white font-bold whitespace-nowrap uppercase text-xs">Total</span>
+                                        <div className="flex-1 border-b border-dashed border-gray-300 dark:border-gray-600"></div>
+                                        <span className="font-bold text-lg text-blue-600 dark:text-blue-400">${Number(order.total || 0).toFixed(2)}</span>
                                     </div>
                                 </div>
                             </div>
