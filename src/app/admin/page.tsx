@@ -69,6 +69,8 @@ export default async function Ecommerce({
   const percentOrders = calculatePercentage(metrics.totalOrders, previousMetrics.totalOrders);
   const percentRevenue = calculatePercentage(metrics.totalRevenue, previousMetrics.totalRevenue);
   const percentProfit = calculatePercentage(metrics.totalProfit, previousMetrics.totalProfit);
+  const percentDeliveryFee = calculatePercentage(metrics.totalDeliveryFee, previousMetrics.totalDeliveryFee);
+  const percentDiscount = calculatePercentage(metrics.totalDiscount, previousMetrics.totalDiscount);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -86,6 +88,10 @@ export default async function Ecommerce({
         percentRevenue={percentRevenue}
         totalProfit={metrics.totalProfit}
         percentProfit={percentProfit}
+        totalDeliveryFee={metrics.totalDeliveryFee}
+        percentDeliveryFee={percentDeliveryFee}
+        totalDiscount={metrics.totalDiscount}
+        percentDiscount={percentDiscount}
       />
 
       {/* Middle Row: Trends */}

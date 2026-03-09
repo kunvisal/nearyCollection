@@ -39,10 +39,12 @@ export class DashboardRepository {
             }
         });
 
-        // Total revenue (sum of totally paid orders) within date range
+        // Total revenue, delivery fee, and discount within date range
         const revenueResult = await prisma.order.aggregate({
             _sum: {
-                total: true
+                total: true,
+                deliveryFee: true,
+                discount: true
             },
             where: {
                 paymentStatus: 'PAID',
@@ -55,6 +57,8 @@ export class DashboardRepository {
         });
 
         const totalRevenue = revenueResult._sum.total ? Number(revenueResult._sum.total) : 0;
+        const totalDeliveryFee = revenueResult._sum.deliveryFee ? Number(revenueResult._sum.deliveryFee) : 0;
+        const totalDiscount = revenueResult._sum.discount ? Number(revenueResult._sum.discount) : 0;
 
         // Daily Revenue & Profit (in the selected date range)
         const recentPaidOrders = await prisma.order.findMany({
@@ -79,17 +83,22 @@ export class DashboardRepository {
             }
         });
 
+        const toLocalDateStr = (d: Date) => {
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+        };
+
         // Group by day string 'YYYY-MM-DD'
         const metricsByDayMap: Record<string, { revenue: number, profit: number }> = {};
         for (let i = 0; i < daysToMap; i++) {
             const d = new Date(startDate);
             d.setDate(d.getDate() + i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = toLocalDateStr(d);
             metricsByDayMap[dateStr] = { revenue: 0, profit: 0 };
         }
 
         recentPaidOrders.forEach(order => {
-            const dateStr = order.createdAt.toISOString().split('T')[0];
+            const dateStr = toLocalDateStr(order.createdAt);
             if (metricsByDayMap[dateStr] !== undefined) {
                 // Revenue is just the order total
                 metricsByDayMap[dateStr].revenue += Number(order.total);
@@ -230,6 +239,8 @@ export class DashboardRepository {
             totalOrders,
             totalRevenue,
             totalProfit,
+            totalDeliveryFee,
+            totalDiscount,
             recentOrders: serializedOrders,
         };
     }
