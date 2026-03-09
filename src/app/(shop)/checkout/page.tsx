@@ -5,6 +5,7 @@ import { useCartStore } from "@/lib/store/cartStore";
 import Link from "next/link";
 import { ArrowLeft, CreditCard } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
+import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useRouter } from "next/navigation";
 import { DeliveryZone, PaymentMethod } from "@prisma/client";
 
@@ -12,6 +13,7 @@ export default function CheckoutPage() {
     const { items, getCartTotal, clearCart } = useCartStore();
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+    const [deliveryFees, setDeliveryFees] = useState({ pp: 1.5, province: 2.5 });
     const [formData, setFormData] = useState({
         customerName: "",
         customerPhone: "",
@@ -20,7 +22,13 @@ export default function CheckoutPage() {
         paymentMethod: "ABA" as PaymentMethod,
     });
 
-    const deliveryFee = formData.deliveryZone === "PP" ? 1.50 : 2.50;
+    React.useEffect(() => {
+        getDeliveryFeesAction().then(res => {
+            setDeliveryFees({ pp: res.deliveryFeePP, province: res.deliveryFeeProvince });
+        });
+    }, []);
+
+    const deliveryFee = formData.deliveryZone === "PP" ? deliveryFees.pp : deliveryFees.province;
     const subtotal = getCartTotal();
     const total = subtotal + deliveryFee;
 
@@ -126,9 +134,8 @@ export default function CheckoutPage() {
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-black dark:focus:ring-blue-500 outline-none transition-all dark:text-white"
                             >
-                                <option value="Phnom Penh">Phnom Penh ($1.50)</option>
-                                <option value="Kandal">Kandal ($2.00)</option>
-                                <option value="Other Provinces">Other Provinces ($2.50)</option>
+                                <option value="PP">Phnom Penh (${deliveryFees.pp.toFixed(2)})</option>
+                                <option value="PROVINCE">Provinces (${deliveryFees.province.toFixed(2)})</option>
                             </select>
                         </div>
                         <div>

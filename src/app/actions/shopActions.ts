@@ -47,3 +47,11 @@ export async function getProductsByCategoryAction(categoryId: number, page: numb
         hasMore: skip + products.length < total
     };
 }
+
+export async function getDeliveryFeesAction() {
+    const settings = await prisma.settings.findFirst({ where: { id: 1 } });
+    return {
+        deliveryFeePP: Number(settings?.deliveryFeePP || 1.5),
+        deliveryFeeProvince: Number(settings?.deliveryFeeProvince || 2.5),
+    };
+}

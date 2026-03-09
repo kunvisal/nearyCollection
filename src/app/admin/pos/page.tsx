@@ -4,6 +4,7 @@ import React, { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
 import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
+import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 
@@ -75,10 +76,14 @@ export default function POSPage() {
 
     const [isPending, startTransition] = useTransition();
     const { addToast } = useToast();
+    const [deliveryFees, setDeliveryFees] = useState({ pp: 1.5, province: 2.5 });
 
     useEffect(() => {
         fetchProducts();
         fetchCategories();
+        getDeliveryFeesAction().then(res => {
+            setDeliveryFees({ pp: res.deliveryFeePP, province: res.deliveryFeeProvince });
+        });
     }, []);
 
     useEffect(() => {
@@ -182,7 +187,7 @@ export default function POSPage() {
 
     const subtotal = cart.reduce((sum, item) => sum + (item.salePrice * item.qty), 0);
     const isPPZone = formData.deliveryZone === "PP";
-    const deliveryFee = formData.deliveryZone === "PP" ? 1.50 : 2.50;
+    const deliveryFee = formData.deliveryZone === "PP" ? deliveryFees.pp : deliveryFees.province;
     const discountValue = Number(formData.discount) || 0;
     const appliedDeliveryFee = formData.isFreeDelivery ? 0 : deliveryFee;
     const total = Math.max(0, subtotal - discountValue + appliedDeliveryFee);
