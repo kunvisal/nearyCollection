@@ -116,7 +116,12 @@ export default function OrderDetailPage() {
                         </p>
                     </div>
                 </div>
-                <div>
+                <div className="flex items-center gap-3">
+                    {order.orderStatus !== 'DELIVERED' && order.orderStatus !== 'CANCELLED' && (
+                        <button onClick={() => router.push(`/admin/orders/${order.id}/edit`)} className="flex items-center gap-2 px-4 py-2 bg-[#e21b70] hover:bg-[#c2145e] text-white rounded-lg shadow-sm transition-colors font-medium">
+                            Edit Order
+                        </button>
+                    )}
                     <button onClick={() => window.open(`/print/order/${order.id}`, '_blank')} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg shadow-sm transition-colors font-medium">
                         Print Receipt
                     </button>

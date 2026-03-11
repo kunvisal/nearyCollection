@@ -43,3 +43,41 @@ export async function createOrderAction(
         };
     }
 }
+
+export async function updateOrderAction(
+    orderId: string,
+    customerData: { fullName: string; phone: string },
+    orderData: {
+        deliveryZone: DeliveryZone;
+        deliveryAddress: string;
+        deliveryFee: number;
+        isFreeDelivery?: boolean;
+        paymentMethod: PaymentMethod;
+        deliveryService?: DeliveryService;
+        items: Array<{
+            variantId: string;
+            qty: number;
+            salePrice: number;
+            discount?: number;
+        }>;
+        note?: string;
+        discount?: number;
+    }
+) {
+    try {
+        const order = await OrderService.updateOrder(orderId, customerData, orderData);
+        return {
+            success: true,
+            order: {
+                id: order.id,
+                orderCode: order.orderCode,
+            }
+        };
+    } catch (error: any) {
+        console.error("Order update failed", error);
+        return {
+            success: false,
+            error: error?.message || "Internal server error during order update"
+        };
+    }
+}

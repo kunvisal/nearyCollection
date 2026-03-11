@@ -175,6 +175,176 @@ export class OrderRepository {
         });
     }
 
+    static async updateOrderTransaction(
+        orderId: string,
+        customerData: { fullName: string; phone: string },
+        orderData: {
+            deliveryZone: DeliveryZone;
+            deliveryAddress: string;
+            deliveryFee: number;
+            isFreeDelivery?: boolean;
+            paymentMethod: PaymentMethod;
+            deliveryService?: DeliveryService;
+            items: Array<{
+                variantId: string;
+                qty: number;
+                salePrice: number;
+                discount?: number;
+            }>;
+            note?: string;
+            discount?: number;
+        }
+    ) {
+        return prisma.$transaction(async (tx) => {
+            const existingOrder = await tx.order.findUnique({
+                where: { id: orderId },
+                include: { items: true },
+            });
+
+            if (!existingOrder) {
+                throw new Error("Order not found");
+            }
+
+            // 1. Update customer 
+            let customer = await tx.customer.findFirst({
+                where: { phone: customerData.phone },
+            });
+
+            if (!customer) {
+                customer = await tx.customer.create({
+                    data: {
+                        fullName: customerData.fullName,
+                        phone: customerData.phone,
+                    },
+                });
+            } else if (customer.fullName !== customerData.fullName) {
+                customer = await tx.customer.update({
+                    where: { id: customer.id },
+                    data: { fullName: customerData.fullName },
+                });
+            }
+
+            // 2. Restore stock for existing items
+            if (existingOrder.orderStatus !== 'CANCELLED') {
+                for (const item of existingOrder.items) {
+                    await tx.productVariant.update({
+                        where: { id: item.variantId },
+                        data: {
+                            stockOnHand: { increment: item.qty }
+                        }
+                    });
+
+                    await tx.inventoryTransaction.create({
+                        data: {
+                            variantId: item.variantId,
+                            type: 'IN',
+                            qty: item.qty,
+                            refType: 'ORDER_EDIT',
+                            refId: existingOrder.id,
+                            note: `Order Edit - Restored Stock - ${existingOrder.orderCode}`
+                        }
+                    });
+                }
+            }
+
+            // 3. Delete old items
+            await tx.orderItem.deleteMany({
+                where: { orderId: existingOrder.id }
+            });
+
+            // 4. Validate and prepare new items
+            let subtotal = 0;
+            const orderItemsData: any[] = [];
+
+            for (const item of orderData.items) {
+                const variant = await tx.productVariant.findUnique({
+                    where: { id: item.variantId },
+                    include: { product: true },
+                });
+
+                if (!variant) {
+                    throw new Error(`Variant ${item.variantId} not found`);
+                }
+
+                if (variant.stockOnHand < item.qty) {
+                    throw new Error(`Insufficient stock for ${variant.product.nameKm} - ${variant.color || ''} ${variant.size || ''}`);
+                }
+
+                const lineTotal = (item.salePrice - (item.discount || 0)) * item.qty;
+                subtotal += lineTotal;
+
+                orderItemsData.push({
+                    variantId: item.variantId,
+                    productNameSnapshot: variant.product.nameKm,
+                    sizeSnapshot: variant.size || '',
+                    colorSnapshot: variant.color || '',
+                    skuSnapshot: variant.sku || '',
+                    costPriceSnapshot: variant.costPrice,
+                    salePriceSnapshot: item.salePrice,
+                    discountSnapshot: item.discount || 0,
+                    qty: item.qty,
+                    lineTotal: new Prisma.Decimal(lineTotal),
+                });
+            }
+
+            const orderDiscount = orderData.discount || 0;
+            const deliveryCharge = orderData.isFreeDelivery ? 0 : orderData.deliveryFee;
+            const total = Math.max(0, subtotal - orderDiscount + deliveryCharge);
+
+            // 5. Update Order
+            const order = await tx.order.update({
+                where: { id: existingOrder.id },
+                data: {
+                    customerId: customer.id,
+                    deliveryZone: orderData.deliveryZone,
+                    deliveryFee: new Prisma.Decimal(orderData.deliveryFee),
+                    isFreeDelivery: orderData.isFreeDelivery || false,
+                    subtotal: new Prisma.Decimal(subtotal),
+                    discount: new Prisma.Decimal(orderDiscount),
+                    total: new Prisma.Decimal(total),
+                    paymentMethod: orderData.paymentMethod,
+                    deliveryService: orderData.deliveryService,
+                    shippingAddress: { detailedAddress: orderData.deliveryAddress },
+                    note: orderData.note,
+                    items: {
+                        createMany: {
+                            data: orderItemsData,
+                        },
+                    },
+                },
+                include: {
+                    customer: true,
+                    items: true,
+                },
+            });
+
+            // 6. Deduct new stock
+            if (existingOrder.orderStatus !== 'CANCELLED') {
+                for (const item of orderData.items) {
+                    await tx.productVariant.update({
+                        where: { id: item.variantId },
+                        data: {
+                            stockOnHand: { decrement: item.qty },
+                        },
+                    });
+
+                    await tx.inventoryTransaction.create({
+                        data: {
+                            variantId: item.variantId,
+                            type: 'DEDUCT',
+                            qty: -item.qty,
+                            refType: 'ORDER_EDIT',
+                            refId: order.id,
+                            note: `Order Edit - Deducted Stock - ${order.orderCode}`,
+                        },
+                    });
+                }
+            }
+
+            return order;
+        });
+    }
+
     static async getOrders(params: {
         skip?: number;
         take?: number;

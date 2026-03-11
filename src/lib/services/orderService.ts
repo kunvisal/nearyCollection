@@ -36,6 +36,35 @@ export class OrderService {
         }
     }
 
+    static async updateOrder(
+        orderId: string,
+        customerData: { fullName: string; phone: string },
+        orderData: {
+            deliveryZone: DeliveryZone;
+            deliveryAddress: string;
+            deliveryFee: number;
+            isFreeDelivery?: boolean;
+            paymentMethod: PaymentMethod;
+            deliveryService?: DeliveryService;
+            items: Array<{
+                variantId: string;
+                qty: number;
+                salePrice: number;
+                discount?: number;
+            }>;
+            note?: string;
+            discount?: number;
+        }
+    ) {
+        try {
+            const order = await OrderRepository.updateOrderTransaction(orderId, customerData, orderData);
+            return order;
+        } catch (error) {
+            console.error("Error updating order:", error);
+            throw error;
+        }
+    }
+
     static async getOrders(params: {
         page?: number;
         limit?: number;
