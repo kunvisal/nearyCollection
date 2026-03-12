@@ -269,7 +269,7 @@ export default function ManageProductPage() {
                                     <img src={img.url} alt="Product" className="w-full h-full object-cover" />
                                     <button
                                         onClick={() => handleDeleteImage(img.id)}
-                                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -306,7 +306,7 @@ export default function ManageProductPage() {
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                            <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                 <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
                                     <tr>
                                         <th className="px-4 py-3 font-semibold rounded-tl-lg">SKU / Attributes</th>
@@ -541,7 +541,7 @@ export default function ManageProductPage() {
                             ) : inventoryLogs.length === 0 ? (
                                 <div className="text-center py-8 text-gray-500">No inventory transactions found.</div>
                             ) : (
-                                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                                <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                     <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-700 dark:text-gray-300">
                                         <tr>
                                             <th className="px-4 py-3 font-semibold rounded-tl-lg">Date</th>

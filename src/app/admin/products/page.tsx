@@ -148,7 +148,7 @@ export default function ProductsPage() {
 
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                    <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                         <thead className="bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                             <tr>
                                 <th className="px-6 py-4 font-semibold">Product Name</th>
