@@ -172,7 +172,7 @@ export class OrderRepository {
             }
 
             return order;
-        });
+        }, { timeout: 15000 });
     }
 
     static async updateOrderTransaction(
@@ -342,7 +342,7 @@ export class OrderRepository {
             }
 
             return order;
-        });
+        }, { timeout: 15000 });
     }
 
     static async getOrders(params: {
@@ -482,7 +482,7 @@ export class OrderRepository {
                 where: { id },
                 data: { orderStatus: status }
             });
-        });
+        }, { timeout: 15000 });
     }
 
     static async updatePaymentStatus(id: string, status: PaymentStatus) {
