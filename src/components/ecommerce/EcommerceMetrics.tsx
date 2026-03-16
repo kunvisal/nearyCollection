@@ -10,10 +10,6 @@ interface EcommerceMetricsProps {
   percentRevenue: number;
   totalProfit: number;
   percentProfit: number;
-  totalDeliveryFee: number;
-  percentDeliveryFee: number;
-  totalDiscount: number;
-  percentDiscount: number;
 }
 
 const PercentageChange = ({ value }: { value: number }) => {
@@ -46,14 +42,10 @@ export const EcommerceMetrics: React.FC<EcommerceMetricsProps> = ({
   totalRevenue,
   percentRevenue,
   totalProfit,
-  percentProfit,
-  totalDeliveryFee,
-  percentDeliveryFee,
-  totalDiscount,
-  percentDiscount
+  percentProfit
 }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-2 md:gap-3">
       {/* Customers Metric */}
       <div className="rounded-xl border border-gray-200 bg-white p-2.5 flex flex-col justify-between dark:border-gray-800 dark:bg-white/[0.03]">
         <span className="text-xs text-gray-500 mb-1.5 dark:text-gray-400">Total Customers</span>
@@ -91,27 +83,6 @@ export const EcommerceMetrics: React.FC<EcommerceMetricsProps> = ({
             ${totalProfit.toFixed(2)}
           </h4>
           <PercentageChange value={percentProfit} />
-        </div>
-      </div>
-      {/* Delivery Fee Metric */}
-      <div className="rounded-xl border border-gray-200 bg-white p-2.5 flex flex-col justify-between dark:border-gray-800 dark:bg-white/[0.03]">
-        <span className="text-xs text-gray-500 mb-1.5 dark:text-gray-400">Total Delivery Fee</span>
-        <div className="flex items-end justify-between">
-          <h4 className="font-bold text-gray-900 text-base md:text-lg dark:text-white/90">
-            ${totalDeliveryFee.toFixed(2)}
-          </h4>
-          <PercentageChange value={percentDeliveryFee} />
-        </div>
-      </div>
-
-      {/* Discount Metric */}
-      <div className="rounded-xl border border-gray-200 bg-white p-2.5 flex flex-col justify-between dark:border-gray-800 dark:bg-white/[0.03]">
-        <span className="text-xs text-gray-500 mb-1.5 dark:text-gray-400">Total Discount</span>
-        <div className="flex items-end justify-between">
-          <h4 className="font-bold text-gray-900 text-base md:text-lg dark:text-white/90">
-            ${totalDiscount.toFixed(2)}
-          </h4>
-          <PercentageChange value={percentDiscount} />
         </div>
       </div>
     </div>

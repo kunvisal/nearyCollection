@@ -1,20 +1,91 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react";
+import flatpickr from "flatpickr";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { CalenderIcon } from "../../icons";
 
 export default function DashboardDateFilter() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
+    const datePickerRef = useRef<HTMLInputElement>(null);
 
-    // Default to 30d if range is not provided
-    const currentRange = searchParams.get("range") || "30d";
+    const fromParam = searchParams.get("from");
+    const toParam = searchParams.get("to");
+    const rangeParam = searchParams.get("range");
+    const currentRange = rangeParam || (fromParam && toParam ? "custom" : "30d");
 
     const setRange = (range: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("range", range);
+        params.delete("from");
+        params.delete("to");
         router.push(`${pathname}?${params.toString()}`);
     };
+
+    useEffect(() => {
+        if (!datePickerRef.current) return;
+
+        const today = new Date();
+        const endOfToday = new Date(today);
+        endOfToday.setHours(23, 59, 59, 999);
+
+        let defaultStart = new Date(today);
+        let defaultEnd = new Date(endOfToday);
+
+        if (fromParam && toParam) {
+            defaultStart = new Date(`${fromParam}T00:00:00`);
+            defaultEnd = new Date(`${toParam}T23:59:59.999`);
+        } else if (currentRange === "today") {
+            defaultStart.setHours(0, 0, 0, 0);
+        } else if (currentRange === "7d") {
+            defaultStart.setDate(today.getDate() - 6);
+            defaultStart.setHours(0, 0, 0, 0);
+        } else {
+            defaultStart.setDate(today.getDate() - 29);
+            defaultStart.setHours(0, 0, 0, 0);
+        }
+
+        const isCustomActive = currentRange === "custom";
+        const baseInputClass = "h-9 w-[140px] md:w-[180px] rounded-full border text-sm font-medium outline-none cursor-pointer pl-9 pr-3";
+        const activeInputClass = isCustomActive
+            ? "border-blue-400 text-blue-600 bg-blue-50 dark:border-blue-500/60 dark:text-blue-300 dark:bg-blue-900/30"
+            : "border-gray-200 text-gray-700 bg-white dark:border-gray-700 dark:text-gray-300 dark:bg-gray-800";
+
+        const fp = flatpickr(datePickerRef.current, {
+            mode: "range",
+            position: "auto right",
+            monthSelectorType: "static",
+            dateFormat: "Y-m-d",
+            altFormat: "M d",
+            altInput: true,
+            altInputClass: `${baseInputClass} ${activeInputClass}`,
+            defaultDate: [defaultStart, defaultEnd],
+            clickOpens: true,
+            prevArrow:
+                '<svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 15L7.5 10L12.5 5" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            nextArrow:
+                '<svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 15L12.5 10L7.5 5" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            onChange: (selectedDates) => {
+                if (selectedDates.length === 2) {
+                    const from = selectedDates[0].toISOString().split("T")[0];
+                    const to = selectedDates[1].toISOString().split("T")[0];
+
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("range", "custom");
+                    params.set("from", from);
+                    params.set("to", to);
+                    router.push(`${pathname}?${params.toString()}`);
+                }
+            }
+        });
+
+        return () => {
+            if (!Array.isArray(fp)) {
+                fp.destroy();
+            }
+        };
+    }, [currentRange, fromParam, toParam, pathname, router, searchParams]);
 
     const getPillStyle = (range: string) => {
         const isActive = currentRange === range;
@@ -25,7 +96,7 @@ export default function DashboardDateFilter() {
     };
 
     return (
-        <div className="flex items-center space-x-2 mt-2 mb-4">
+        <div className="flex items-center space-x-2 mt-2 mb-4 flex-wrap gap-y-2">
             <button onClick={() => setRange("30d")} className={getPillStyle("30d")}>
                 28 days
             </button>
@@ -35,6 +106,14 @@ export default function DashboardDateFilter() {
             <button onClick={() => setRange("today")} className={getPillStyle("today")}>
                 Today
             </button>
+            <div className="relative inline-flex items-center">
+                <CalenderIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none z-10" />
+                <input
+                    ref={datePickerRef}
+                    className="h-9 w-[140px] md:w-[180px] rounded-full border border-gray-200 bg-white text-sm font-medium text-transparent outline-none dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
+                    placeholder="Custom range"
+                />
+            </div>
         </div>
     );
 }

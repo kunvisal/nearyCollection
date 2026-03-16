@@ -230,6 +230,28 @@ export class DashboardRepository {
             }))
         }));
 
+        // Stock inventory values (snapshot, not date-filtered)
+        const activeVariants = await prisma.productVariant.findMany({
+            where: {
+                isActive: true,
+                stockOnHand: { gt: 0 }
+            },
+            select: {
+                costPrice: true,
+                salePrice: true,
+                discountAmount: true,
+                stockOnHand: true
+            }
+        });
+
+        let totalStockCost = 0;
+        let totalStockSellingValue = 0;
+        activeVariants.forEach(v => {
+            const qty = v.stockOnHand;
+            totalStockCost += Number(v.costPrice) * qty;
+            totalStockSellingValue += (Number(v.salePrice) - Number(v.discountAmount)) * qty;
+        });
+
         return {
             dailyRevenue,
             monthlySales,
@@ -242,6 +264,8 @@ export class DashboardRepository {
             totalDeliveryFee,
             totalDiscount,
             recentOrders: serializedOrders,
+            totalStockCost,
+            totalStockSellingValue,
         };
     }
 }
