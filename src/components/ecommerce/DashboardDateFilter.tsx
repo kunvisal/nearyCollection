@@ -47,7 +47,7 @@ export default function DashboardDateFilter() {
         }
 
         const isCustomActive = currentRange === "custom";
-        const baseInputClass = "h-9 w-[140px] md:w-[180px] rounded-full border text-sm font-medium outline-none cursor-pointer pl-9 pr-3";
+        const baseInputClass = "h-9 w-[165px] md:w-[220px] rounded-full border text-sm font-medium outline-none cursor-pointer pl-9 pr-3";
         const activeInputClass = isCustomActive
             ? "border-blue-400 text-blue-600 bg-blue-50 dark:border-blue-500/60 dark:text-blue-300 dark:bg-blue-900/30"
             : "border-gray-200 text-gray-700 bg-white dark:border-gray-700 dark:text-gray-300 dark:bg-gray-800";
@@ -96,21 +96,20 @@ export default function DashboardDateFilter() {
     };
 
     return (
-        <div className="flex items-center space-x-2 mt-2 mb-4 flex-wrap gap-y-2">
-            <button onClick={() => setRange("30d")} className={getPillStyle("30d")}>
-                28 days
-            </button>
-            <button onClick={() => setRange("7d")} className={getPillStyle("7d")}>
-                7 days
-            </button>
-            <button onClick={() => setRange("today")} className={getPillStyle("today")}>
-                Today
-            </button>
-            <div className="relative inline-flex items-center">
+        <div className="flex items-center justify-between gap-1.5 mt-2 mb-4">
+            <div className="flex items-center gap-1.5">
+                <button onClick={() => setRange("7d")} className={getPillStyle("7d")}>
+                    7 days
+                </button>
+                <button onClick={() => setRange("today")} className={getPillStyle("today")}>
+                    Today
+                </button>
+            </div>
+            <div className="relative inline-flex items-center shrink-0 ml-auto">
                 <CalenderIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none z-10" />
                 <input
                     ref={datePickerRef}
-                    className="h-9 w-[140px] md:w-[180px] rounded-full border border-gray-200 bg-white text-sm font-medium text-transparent outline-none dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
+                    className="h-9 w-[165px] md:w-[220px] rounded-full border border-gray-200 bg-white text-sm font-medium text-transparent outline-none dark:border-gray-700 dark:bg-gray-800 cursor-pointer"
                     placeholder="Custom range"
                 />
             </div>
