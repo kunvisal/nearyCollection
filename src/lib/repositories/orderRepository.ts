@@ -23,9 +23,15 @@ export class OrderRepository {
         }
     ) {
         return prisma.$transaction(async (tx) => {
-            // 1. Find or create customer
+            // 1. Find or create customer (match both phone and name to avoid overwriting past orders)
             let customer = await tx.customer.findFirst({
-                where: { phone: customerData.phone },
+                where: { 
+                    phone: customerData.phone,
+                    fullName: {
+                        equals: customerData.fullName,
+                        mode: 'insensitive'
+                    }
+                },
             });
 
             if (!customer) {
@@ -34,11 +40,6 @@ export class OrderRepository {
                         fullName: customerData.fullName,
                         phone: customerData.phone,
                     },
-                });
-            } else if (customer.fullName !== customerData.fullName) {
-                customer = await tx.customer.update({
-                    where: { id: customer.id },
-                    data: { fullName: customerData.fullName },
                 });
             }
 
@@ -207,7 +208,13 @@ export class OrderRepository {
 
             // 1. Update customer 
             let customer = await tx.customer.findFirst({
-                where: { phone: customerData.phone },
+                where: { 
+                    phone: customerData.phone,
+                    fullName: {
+                        equals: customerData.fullName,
+                        mode: 'insensitive'
+                    }
+                },
             });
 
             if (!customer) {
@@ -216,11 +223,6 @@ export class OrderRepository {
                         fullName: customerData.fullName,
                         phone: customerData.phone,
                     },
-                });
-            } else if (customer.fullName !== customerData.fullName) {
-                customer = await tx.customer.update({
-                    where: { id: customer.id },
-                    data: { fullName: customerData.fullName },
                 });
             }
 
