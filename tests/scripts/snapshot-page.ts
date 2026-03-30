@@ -1,5 +1,5 @@
 /**
- * CLI Snapshot Helper — Token-efficient page inspection
+ * CLI snapshot helper - token-efficient page inspection
  *
  * Usage:
  *   npx ts-node tests/scripts/snapshot-page.ts <url> [output-name]
@@ -10,16 +10,9 @@
  *   npx ts-node tests/scripts/snapshot-page.ts http://localhost:3000/admin/orders admin-orders
  *
  * Output:
- *   tests/snapshots/<name>.json  — Full accessibility tree (read only when you need element refs)
- *   tests/snapshots/<name>.summary.txt — Lightweight role/name summary (read this first)
- *   tests/screenshots/<name>.png — Full-page screenshot
- *
- * Workflow:
- *   1. Run this script to capture the page state
- *   2. Read the .summary.txt to understand what's on the page
- *   3. Only open the full .json when you need an exact element to interact with
- *   4. Use role + name from the summary to build Playwright locators:
- *      page.getByRole('button', { name: 'Confirm Order' })
+ *   tests/snapshots/<name>.yaml - Full page snapshot
+ *   tests/snapshots/<name>.summary.txt - Lightweight summary (read this first)
+ *   tests/screenshots/<name>.png - Full-page screenshot
  */
 
 import { chromium } from "@playwright/test";
@@ -34,14 +27,14 @@ if (!url) {
   process.exit(1);
 }
 
-// Derive a filename from the URL or use provided suffix
+// Derive a filename from the URL or use provided suffix.
 function urlToName(rawUrl: string): string {
   const parsed = new URL(rawUrl);
-  const slug = (parsed.pathname === "/" ? "home" : parsed.pathname)
-    .replace(/^\//, "")
-    .replace(/\//g, "-")
-    .replace(/[^a-z0-9-]/gi, "")
-    || "page";
+  const slug =
+    (parsed.pathname === "/" ? "home" : parsed.pathname)
+      .replace(/^\//, "")
+      .replace(/\//g, "-")
+      .replace(/[^a-z0-9-]/gi, "") || "page";
   return slug;
 }
 
@@ -52,28 +45,12 @@ const screenshotsDir = path.join(process.cwd(), "tests", "screenshots");
 fs.mkdirSync(snapshotsDir, { recursive: true });
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
-type AXNode = {
-  role?: string;
-  name?: string;
-  description?: string;
-  children?: AXNode[];
-  [key: string]: unknown;
+type SnapshotCapablePage = {
+  ariaSnapshot?: () => Promise<string>;
+  accessibility?: {
+    snapshot: (options?: { interestingOnly?: boolean }) => Promise<unknown>;
+  };
 };
-
-function buildSummary(node: AXNode, depth = 0): string[] {
-  const lines: string[] = [];
-  const indent = "  ".repeat(depth);
-  const role = node.role ?? "unknown";
-  const label = node.name ? ` "${node.name}"` : "";
-  const desc = node.description ? ` [${node.description}]` : "";
-  if (role !== "none" && role !== "generic") {
-    lines.push(`${indent}${role}${label}${desc}`);
-  }
-  for (const child of node.children ?? []) {
-    lines.push(...buildSummary(child, depth + (role !== "none" && role !== "generic" ? 1 : 0)));
-  }
-  return lines;
-}
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -82,8 +59,26 @@ function buildSummary(node: AXNode, depth = 0): string[] {
   console.log(`Navigating to ${url}...`);
   await page.goto(url, { waitUntil: "networkidle" });
 
-  // Full accessibility tree
-  const snapshot = await page.accessibility.snapshot({ interestingOnly: false });
+  const compatiblePage = page as unknown as SnapshotCapablePage;
+  let snapshotText = "";
+
+  if (typeof compatiblePage.ariaSnapshot === "function") {
+    // Newer Playwright versions.
+    snapshotText = await compatiblePage.ariaSnapshot();
+  } else if (compatiblePage.accessibility?.snapshot) {
+    // Legacy Playwright API.
+    const legacySnapshot = await compatiblePage.accessibility.snapshot({ interestingOnly: false });
+    snapshotText = JSON.stringify(legacySnapshot ?? {}, null, 2);
+  } else {
+    // Last-resort fallback that still provides context for quick debugging.
+    const bodyText = await page.evaluate(() => document.body?.innerText ?? "");
+    const lines = bodyText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .slice(0, 500);
+    snapshotText = lines.length > 0 ? lines.join("\n") : "(empty page text snapshot)";
+  }
 
   // Full-page screenshot
   const screenshotPath = path.join(screenshotsDir, `${name}.png`);
@@ -92,18 +87,22 @@ function buildSummary(node: AXNode, depth = 0): string[] {
 
   await browser.close();
 
-  // Save full snapshot JSON
-  const snapshotPath = path.join(snapshotsDir, `${name}.json`);
-  fs.writeFileSync(snapshotPath, JSON.stringify(snapshot, null, 2), "utf-8");
+  // Save full snapshot
+  const snapshotPath = path.join(snapshotsDir, `${name}.yaml`);
+  fs.writeFileSync(snapshotPath, snapshotText, "utf-8");
   console.log(`Full snapshot saved: ${snapshotPath}`);
 
-  // Save lightweight summary
-  const summary = snapshot ? buildSummary(snapshot as AXNode) : ["(empty)"];
+  // Build lightweight summary: first 60 non-empty lines.
+  const allLines = snapshotText
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const summary = allLines.length > 0 ? allLines : ["(empty)"];
   const summaryPath = path.join(snapshotsDir, `${name}.summary.txt`);
   fs.writeFileSync(summaryPath, summary.join("\n"), "utf-8");
   console.log(`Summary saved: ${summaryPath}`);
 
-  // Print summary to stdout so Claude sees it inline (without loading the full JSON)
+  // Print summary to stdout for quick terminal review.
   console.log("\n--- Page Summary ---");
   console.log(summary.slice(0, 60).join("\n"));
   if (summary.length > 60) {
