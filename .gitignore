@@ -10,6 +10,13 @@
 # testing
 /coverage
 
+# playwright
+/tests/snapshots/
+/tests/screenshots/
+/tests/reports/
+/tests/output/
+/tests/.auth/
+
 # next.js
 /.next/
 /out/
