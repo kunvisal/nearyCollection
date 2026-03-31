@@ -7,6 +7,7 @@ import { createOrderAction } from "@/app/actions/orderActions";
 import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
+import { MessengerImport } from "@/components/admin/pos/MessengerImport";
 
 // Reusing types roughly matching the API response
 type Variant = {
@@ -266,6 +267,21 @@ export default function POSPage() {
         });
     };
 
+    const handleCloseCart = () => {
+        setIsCartOpen(false);
+        setFormData({
+            customerName: "",
+            customerPhone: "",
+            deliveryZone: "PP",
+            deliveryAddress: "",
+            paymentMethod: "COD",
+            deliveryService: "JALAT",
+            note: "",
+            discount: "",
+            isFreeDelivery: false,
+        });
+    };
+
     const handleNewOrder = () => {
         setCart([]);
         setReceiptData(null);
@@ -420,11 +436,11 @@ export default function POSPage() {
                 {/* Slide-Up Checkout Drawer */}
                 {isCartOpen && !receiptData && (
                     <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4">
-                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsCartOpen(false)}></div>
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCloseCart}></div>
                         <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full max-w-lg sm:max-w-2xl flex flex-col relative animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 max-h-[92vh] sm:max-h-[90vh] shadow-2xl overflow-hidden">
                             {/* Drawer Header */}
                             <div className="p-4 flex justify-between items-center shrink-0">
-                                <button onClick={() => setIsCartOpen(false)} className="p-2 -ml-2 text-gray-900 dark:text-white">
+                                <button onClick={handleCloseCart} className="p-2 -ml-2 text-gray-900 dark:text-white">
                                     <X className="w-6 h-6" />
                                 </button>
                                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">Cart</h2>
@@ -469,6 +485,20 @@ export default function POSPage() {
                                             <span className="text-[#e21b70]">${total.toFixed(2)}</span>
                                         </div>
                                     </div>
+
+                                    <hr className="border-gray-100 dark:border-gray-800" />
+
+                                    {/* Import from Messenger */}
+                                    <MessengerImport
+                                        onFill={({ name, phone, address }) => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                ...(name    ? { customerName: name }       : {}),
+                                                ...(phone   ? { customerPhone: phone }     : {}),
+                                                ...(address ? { deliveryAddress: address } : {}),
+                                            }));
+                                        }}
+                                    />
 
                                     <hr className="border-gray-100 dark:border-gray-800" />
 
