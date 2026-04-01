@@ -263,6 +263,7 @@ model Settings {
   contactMessenger       String?
   contactFacebook        String?
   defaultLanguage        DefaultLanguage @default(KM)
+  usdToKhrRate           Int             @default(4000)
   updatedAt              DateTime        @updatedAt
 
   @@map("settings")

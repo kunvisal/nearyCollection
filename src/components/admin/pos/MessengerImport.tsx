@@ -22,6 +22,7 @@ interface ConversationMessage {
 
 interface MessengerImportProps {
     onFill: (data: { name?: string; phone?: string; address?: string }) => void;
+    onSelectConversation?: (customerId: string) => void;
 }
 
 type View = "collapsed" | "list" | "detail";
@@ -43,29 +44,16 @@ function getInitials(name: string): string {
 const PHONE_REGEX = /(?:\+?855[-\s]?)?0[1-9][0-9][-\s]?[0-9]{3}[-\s]?[0-9]{3,4}/;
 
 /**
- * Split a combined customer message into phone + address.
- * Lines that match a Cambodian phone pattern → phone.
- * All other non-empty lines → address.
- * Falls back to the full message text if a field can't be extracted.
+ * Split a message into phone + address.
+ * Finds the phone number, removes it — the remaining text is the address.
+ * Works whether phone and address are on the same line or separate lines.
  */
 function splitMessageFields(message: string): { phone: string; address: string } {
-    const lines = message.split("\n").map((l) => l.trim()).filter(Boolean);
-    let phone: string | null = null;
-    const addressLines: string[] = [];
-
-    for (const line of lines) {
-        const match = line.match(PHONE_REGEX);
-        if (match && !phone) {
-            phone = match[0].replace(/[-\s]/g, "");
-        } else {
-            addressLines.push(line);
-        }
-    }
-
-    return {
-        phone: phone ?? message.trim(),
-        address: addressLines.length > 0 ? addressLines.join("\n") : message.trim(),
-    };
+    const match = message.match(PHONE_REGEX);
+    if (!match) return { phone: "", address: message.trim() };
+    const phone = match[0].replace(/[-\s]/g, "");
+    const address = message.replace(match[0], "").replace(/\s+/g, " ").trim();
+    return { phone, address };
 }
 
 function findPhoneSourceId(
@@ -79,7 +67,7 @@ function findPhoneSourceId(
     )?.id ?? null;
 }
 
-export function MessengerImport({ onFill }: MessengerImportProps) {
+export function MessengerImport({ onFill, onSelectConversation }: MessengerImportProps) {
     const [view, setView] = useState<View>("collapsed");
 
     // List state
@@ -136,6 +124,7 @@ export function MessengerImport({ onFill }: MessengerImportProps) {
     const handleSelectConversation = async (conv: Conversation) => {
         // Auto-fill name immediately on selection
         onFill({ name: conv.customerName });
+        onSelectConversation?.(conv.customerId);
 
         setSelected(conv);
         setView("detail");
@@ -157,15 +146,12 @@ export function MessengerImport({ onFill }: MessengerImportProps) {
             setMessages(loadedMessages);
             setDetectedPhone(phone);
 
-            // Extract address from the non-phone lines of the message that contains the phone
+            // Extract address: find the message containing the phone, remove the phone → rest is address
             if (phone) {
                 const phoneMsg = loadedMessages.find((m) => PHONE_REGEX.test(m.message));
                 if (phoneMsg) {
-                    const addrLines = phoneMsg.message
-                        .split("\n")
-                        .map((l) => l.trim())
-                        .filter((l) => l.length > 0 && !PHONE_REGEX.test(l));
-                    setDetectedAddress(addrLines.length > 0 ? addrLines.join("\n") : null);
+                    const { address } = splitMessageFields(phoneMsg.message);
+                    setDetectedAddress(address || null);
                 }
             }
         } catch (e: unknown) {

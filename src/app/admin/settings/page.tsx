@@ -13,6 +13,7 @@ export default function SettingsPage() {
     const [formData, setFormData] = useState({
         deliveryFeePP: 1.5,
         deliveryFeeProvince: 2.5,
+        usdToKhrRate: 4000,
         paymentInstructionABA: "",
         paymentInstructionWing: "",
         telegramBotToken: "",
@@ -37,6 +38,7 @@ export default function SettingsPage() {
                 setFormData({
                     deliveryFeePP: Number(json.data.deliveryFeePP),
                     deliveryFeeProvince: Number(json.data.deliveryFeeProvince),
+                    usdToKhrRate: Number(json.data.usdToKhrRate) || 4000,
                     paymentInstructionABA: json.data.paymentInstructionABA || "",
                     paymentInstructionWing: json.data.paymentInstructionWing || "",
                     telegramBotToken: json.data.telegramBotToken || "",
@@ -141,7 +143,7 @@ export default function SettingsPage() {
                 {/* Delivery Fees */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delivery Fees ($)</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phnom Penh</label>
                             <input
@@ -165,6 +167,19 @@ export default function SettingsPage() {
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                             />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">USD → KHR Rate (រៀល)</label>
+                            <input
+                                type="number"
+                                step="1"
+                                min="1"
+                                name="usdToKhrRate"
+                                value={formData.usdToKhrRate}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Used to show KHR total in Messenger messages.</p>
                         </div>
                     </div>
                 </div>

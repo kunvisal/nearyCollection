@@ -11,4 +11,5 @@ export const updateSettingsSchema = z.object({
     contactMessenger: z.string().optional(),
     contactFacebook: z.string().optional(),
     defaultLanguage: z.enum(["KM", "EN"]).optional(),
+    usdToKhrRate: z.number().int().min(1).optional(),
 });

@@ -49,6 +49,7 @@ export class SettingsRepository {
                 contactMessenger: data.contactMessenger || "",
                 contactFacebook: data.contactFacebook || "",
                 defaultLanguage: data.defaultLanguage || "KM",
+                usdToKhrRate: data.usdToKhrRate || 4000,
             }
         });
     }

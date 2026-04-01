@@ -100,6 +100,47 @@ export class MessengerService {
         return messages.reverse();
     }
 
+    static async sendMessage(recipientId: string, text: string): Promise<void> {
+        const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+        if (!token) throw new Error("Facebook credentials are not configured");
+
+        const res = await fetch(`${FB_GRAPH_BASE}/me/messages?access_token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                recipient: { id: recipientId },
+                message: { text },
+            }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err?.error?.message ?? "Failed to send Messenger message");
+        }
+    }
+
+    static async sendImage(recipientId: string, imageUrl: string): Promise<void> {
+        const token = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+        if (!token) throw new Error("Facebook credentials are not configured");
+
+        const res = await fetch(`${FB_GRAPH_BASE}/me/messages?access_token=${token}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                recipient: { id: recipientId },
+                message: {
+                    attachment: {
+                        type: "image",
+                        payload: { url: imageUrl, is_reusable: true },
+                    },
+                },
+            }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err?.error?.message ?? "Failed to send Messenger image");
+        }
+    }
+
     static parseCustomerInfo(messages: ConversationMessage[]): ParsedCustomerInfo {
         // Cambodian phone number: 0XX XXX XXX (9 digits) or +855 prefix, with optional spaces/dashes
         const phoneRegex = /(?:\+?855[-\s]?)?0[1-9][0-9][-\s]?[0-9]{3}[-\s]?[0-9]{3,4}/;

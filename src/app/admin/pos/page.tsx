@@ -77,6 +77,14 @@ export default function POSPage() {
 
     const [isPending, startTransition] = useTransition();
     const { addToast } = useToast();
+    const [messengerRecipientId, setMessengerRecipientId] = useState<string | null>(null);
+    const [sendingBlock, setSendingBlock] = useState<1 | 2 | null>(null);
+    const [msgBlock1, setMsgBlock1] = useState("");
+    const [msgBlock2, setMsgBlock2] = useState("");
+    const [khrRate, setKhrRate] = useState(4000);
+    const [sendRiel, setSendRiel] = useState(true);
+    const [sendUsd, setSendUsd] = useState(true);
+    const [sendingQR, setSendingQR] = useState(false);
     const [deliveryFees, setDeliveryFees] = useState({ pp: 1.5, province: 2.5 });
 
     useEffect(() => {
@@ -84,6 +92,9 @@ export default function POSPage() {
         fetchCategories();
         getDeliveryFeesAction().then(res => {
             setDeliveryFees({ pp: res.deliveryFeePP, province: res.deliveryFeeProvince });
+        });
+        fetch("/api/admin/settings").then(r => r.json()).then(json => {
+            if (json.data?.usdToKhrRate) setKhrRate(Number(json.data.usdToKhrRate));
         });
     }, []);
 
@@ -245,12 +256,13 @@ export default function POSPage() {
 
             if (res.success && res.order) {
                 // Show receipt instead of clearing immediately
-                setReceiptData({
+                const newReceiptData = {
                     orderCode: res.order.orderCode,
                     date: new Date().toLocaleString(),
                     customerName: formData.customerName,
                     customerPhone: formData.customerPhone,
                     deliveryAddress: formData.deliveryAddress,
+                    deliveryZone: formData.deliveryZone,
                     items: [...cart],
                     deliveryService: formData.deliveryService,
                     subtotal,
@@ -258,7 +270,11 @@ export default function POSPage() {
                     deliveryFee: appliedDeliveryFee,
                     isFreeDelivery: formData.isFreeDelivery,
                     total,
-                });
+                };
+                setReceiptData(newReceiptData);
+                const [b1, b2] = buildMessengerBlocks(newReceiptData, khrRate);
+                setMsgBlock1(b1);
+                setMsgBlock2(b2);
                 fetchProducts(); // refresh stock numbers
                 addToast("success", "Order Placed", `POS Order ${res.order.orderCode} placed successfully!`);
             } else {
@@ -269,6 +285,10 @@ export default function POSPage() {
 
     const handleCloseCart = () => {
         setIsCartOpen(false);
+        setMessengerRecipientId(null);
+        setSendingBlock(null);
+        setMsgBlock1("");
+        setMsgBlock2("");
         setFormData({
             customerName: "",
             customerPhone: "",
@@ -319,6 +339,73 @@ export default function POSPage() {
         navigator.clipboard.writeText(textToCopy).then(() => {
             addToast("success", "Copied", "Receipt text copied to clipboard!");
         });
+    };
+
+    const buildMessengerBlocks = (data: any, rate = khrRate): [string, string] => {
+        const itemLines = data.items
+            .map((item: any) => {
+                const variant = [item.size, item.color].filter(Boolean).join("/");
+                return `• ${item.nameKm}${variant ? ` (${variant})` : ""} x${item.qty} = $${(item.salePrice * item.qty).toFixed(2)}`;
+            })
+            .join("\n");
+
+        const priceLines = [
+            data.discount > 0 ? `តម្លៃដើម: $${data.subtotal.toFixed(2)}` : null,
+            data.discount > 0 ? `បញ្ចុះតម្លៃ: -$${data.discount.toFixed(2)}` : null,
+            data.isFreeDelivery ? `សេវាដឹក: ឥតគិតថ្លៃ` : `សេវាដឹក: $${data.deliveryFee.toFixed(2)}`,
+            `សរុប: $${data.total.toFixed(2)} = ${Math.round(data.total * rate).toLocaleString()}រ ណា៎បង`,
+        ].filter(Boolean).join("\n");
+
+        const block1 = [itemLines, priceLines, ``, `📞 ${data.customerPhone}`, `📍 ${data.deliveryAddress}`].join("\n");
+
+        const block2 = data.deliveryZone === "PROVINCE"
+            ? `ចំពោះឥវ៉ាន់តាមខេត្តប្អូនសុំទូទាត់មុនណា៎បង បងទូទាត់រួចប្អូនចេញឥវ៉ាន់ជូនបងក្នុងថ្ងៃនឹង ឬយ៉ាងយូរស្អែកព្រឹក🥰\nបន្ទាប់ពីដាក់ឥវ៉ាន់រួចប្អូននឹងថតវិកយប័ត្រដឹកជញ្ជូនជូនបង\nអរគុណច្រើនបង ❤️🙏🏻`
+            : `ចំពោះឥវ៉ាន់នៅភ្នំពេញបងអាចទូទាត់ជាមួយអ្នកដឹកបានអ្នក 🥰🙏🏻\nអរគុណច្រើនបង❤️`;
+
+        return [block1, block2];
+    };
+
+    const handleSendBlock = async (block: 1 | 2) => {
+        if (!messengerRecipientId) return;
+        setSendingBlock(block);
+        try {
+            await fetch("/api/admin/messenger/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ recipientId: messengerRecipientId, message: block === 1 ? msgBlock1 : msgBlock2 }),
+            });
+            addToast("success", "បានផ្ញើ", `បានផ្ញើសារទី${block === 1 ? "១" : "២"}រួចរាល់!`);
+        } catch {
+            addToast("error", "មិនបានផ្ញើ", "មានបញ្ហាក្នុងការផ្ញើសារ");
+        } finally {
+            setSendingBlock(null);
+        }
+    };
+
+    const handleSendQR = async () => {
+        if (!messengerRecipientId || (!sendRiel && !sendUsd)) return;
+        setSendingQR(true);
+        try {
+            if (sendRiel) {
+                await fetch("/api/admin/messenger/send-image", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ recipientId: messengerRecipientId, imageFile: "riel.jpg" }),
+                });
+            }
+            if (sendUsd) {
+                await fetch("/api/admin/messenger/send-image", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ recipientId: messengerRecipientId, imageFile: "usd.jpg" }),
+                });
+            }
+            addToast("success", "បានផ្ញើ", "បានផ្ញើ QR រួចរាល់!");
+        } catch {
+            addToast("error", "មិនបានផ្ញើ", "មានបញ្ហាក្នុងការផ្ញើ QR");
+        } finally {
+            setSendingQR(false);
+        }
     };
 
     return (
@@ -498,6 +585,7 @@ export default function POSPage() {
                                                 ...(address ? { deliveryAddress: address } : {}),
                                             }));
                                         }}
+                                        onSelectConversation={(id) => setMessengerRecipientId(id)}
                                     />
 
                                     <hr className="border-gray-100 dark:border-gray-800" />
@@ -570,12 +658,12 @@ export default function POSPage() {
                 <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 print:static print:inset-auto print:flex-none print:block">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm print:hidden"></div>
                     <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md flex flex-col relative animate-in zoom-in-95 duration-300 ease-out shadow-2xl overflow-hidden print:w-full print:max-w-none print:shadow-none print:rounded-none">
-                        <div className="p-6 text-center border-b border-gray-100 dark:border-gray-800 print:hidden">
-                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        <div className="px-4 py-2 flex items-center justify-center gap-2 border-b border-gray-100 dark:border-gray-800 print:hidden">
+                            <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center shrink-0">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                             </div>
-                            <h2 className="text-2xl font-black text-gray-900 dark:text-white">Order Confirmed!</h2>
-                            <p className="text-gray-500 mt-1">Order #{receiptData.orderCode}</p>
+                            <span className="font-black text-gray-900 dark:text-white text-sm">Order Confirmed!</span>
+                            <span className="text-gray-400 text-xs">#{receiptData.orderCode}</span>
                         </div>
 
                         <div id="receipt-content" className="p-6 overflow-y-auto max-h-[50vh] bg-white text-gray-900">
@@ -615,16 +703,84 @@ export default function POSPage() {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800 grid grid-cols-2 gap-3 print:hidden shrink-0">
-                            <button onClick={() => window.print()} className="py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
-                                Print
-                            </button>
-                            <button onClick={copyReceiptToClipboard} className="py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
-                                Copy Text
-                            </button>
-                            <button onClick={handleNewOrder} className="col-span-2 py-3 px-4 bg-[#e21b70] text-white rounded-xl font-bold hover:bg-[#c2145e] transition text-lg mt-2">
-                                New Order
-                            </button>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 space-y-3 print:hidden shrink-0">
+
+                            {messengerRecipientId && (
+                                <div className="space-y-2">
+                                    {/* Block 2 — payment text */}
+                                    <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-3 flex gap-3 items-start">
+                                        <textarea
+                                            value={msgBlock2}
+                                            onChange={e => setMsgBlock2(e.target.value)}
+                                            rows={4}
+                                            className="flex-1 text-xs text-gray-700 dark:text-gray-200 bg-transparent resize-none outline-none leading-relaxed font-sans"
+                                        />
+                                        <button
+                                            onClick={() => handleSendBlock(2)}
+                                            disabled={sendingBlock !== null || sendingQR}
+                                            className="shrink-0 px-3 py-2 bg-[#e21b70] text-white text-xs font-bold rounded-lg hover:bg-[#c2145e] disabled:opacity-40 transition flex items-center gap-1"
+                                        >
+                                            {sendingBlock === 2 ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send"}
+                                        </button>
+                                    </div>
+                                    {/* QR Block */}
+                                    <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-3 space-y-2">
+                                        <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">QR Payment</p>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => { setSendRiel(true); setSendUsd(true); }}
+                                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition ${sendRiel && sendUsd ? "bg-[#e21b70] text-white border-[#e21b70]" : "bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-500 hover:border-[#e21b70]"}`}
+                                            >
+                                                Both
+                                            </button>
+                                            <button
+                                                onClick={() => { setSendRiel(true); setSendUsd(false); }}
+                                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition ${sendRiel && !sendUsd ? "bg-[#e21b70] text-white border-[#e21b70]" : "bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-500 hover:border-[#e21b70]"}`}
+                                            >
+                                                រៀល only
+                                            </button>
+                                            <button
+                                                onClick={() => { setSendRiel(false); setSendUsd(true); }}
+                                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold border transition ${!sendRiel && sendUsd ? "bg-[#e21b70] text-white border-[#e21b70]" : "bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-500 hover:border-[#e21b70]"}`}
+                                            >
+                                                USD only
+                                            </button>
+                                            <button
+                                                onClick={handleSendQR}
+                                                disabled={sendingQR || sendingBlock !== null || (!sendRiel && !sendUsd)}
+                                                className="shrink-0 px-3 py-1.5 bg-[#e21b70] text-white text-xs font-bold rounded-lg hover:bg-[#c2145e] disabled:opacity-40 transition flex items-center gap-1"
+                                            >
+                                                {sendingQR ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {/* Block 1 — order summary */}
+                                    <div className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-3 flex gap-3 items-start">
+                                        <textarea
+                                            value={msgBlock1}
+                                            onChange={e => setMsgBlock1(e.target.value)}
+                                            rows={7}
+                                            className="flex-1 text-xs text-gray-700 dark:text-gray-200 bg-transparent resize-none outline-none leading-relaxed font-sans"
+                                        />
+                                        <button
+                                            onClick={() => handleSendBlock(1)}
+                                            disabled={sendingBlock !== null || sendingQR}
+                                            className="shrink-0 px-3 py-2 bg-[#e21b70] text-white text-xs font-bold rounded-lg hover:bg-[#c2145e] disabled:opacity-40 transition flex items-center gap-1"
+                                        >
+                                            {sendingBlock === 1 ? <Loader2 className="w-3 h-3 animate-spin" /> : "Send"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <button onClick={() => window.print()} className="py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                                    Print
+                                </button>
+                                <button onClick={handleNewOrder} className="py-3 px-4 bg-[#e21b70] text-white rounded-xl font-bold hover:bg-[#c2145e] transition">
+                                    New Order
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
