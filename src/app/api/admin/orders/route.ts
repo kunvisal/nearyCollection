@@ -20,9 +20,11 @@ export async function GET(req: NextRequest) {
         const dateFromStr = searchParams.get("dateFrom");
         const dateToStr = searchParams.get("dateTo");
 
-        // Parse date strings to full-day boundaries
-        const dateFrom = dateFromStr ? new Date(`${dateFromStr}T00:00:00.000Z`) : undefined;
-        const dateTo = dateToStr ? new Date(`${dateToStr}T23:59:59.999Z`) : undefined;
+        // Parse Cambodia date strings ("YYYY-MM-DD") to full Cambodia-day UTC boundaries.
+        // The T...Z suffix (UTC) was wrong — Cambodia midnight ≠ UTC midnight.
+        const { cambodiaDayStartToUtc, cambodiaDayEndToUtc } = await import("@/lib/utils/timezone");
+        const dateFrom = dateFromStr ? cambodiaDayStartToUtc(dateFromStr) : undefined;
+        const dateTo   = dateToStr   ? cambodiaDayEndToUtc(dateToStr)     : undefined;
 
         const result = await OrderService.getOrders({
             page,

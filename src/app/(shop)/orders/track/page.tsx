@@ -4,6 +4,7 @@ import React, { useState, useTransition } from "react";
 import { trackOrderAction } from "@/app/actions/trackingActions";
 import Link from "next/link";
 import { Search, Loader2, Package, Truck, CheckCircle, ArrowLeft } from "lucide-react";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 
 export default function TrackOrderPage() {
     const [orderCode, setOrderCode] = useState("");
@@ -103,7 +104,7 @@ export default function TrackOrderPage() {
                                 {getStatusIcon(orderInfo.orderStatus)}
                             </div>
                             <h3 className="font-bold text-xl text-gray-900 dark:text-white">Status: {orderInfo.orderStatus}</h3>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Order Placed on {new Date(orderInfo.createdAt).toLocaleDateString()}</p>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Order Placed on {formatCambodiaDate(orderInfo.createdAt, "dd MMM yyyy")}</p>
                         </div>
 
                         <div className="space-y-4">

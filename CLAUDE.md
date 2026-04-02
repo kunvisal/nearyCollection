@@ -33,6 +33,7 @@ AI context file. Read this at the start of every session to understand the proje
 | Hosting | Vercel (app) + Supabase (DB + Storage) |
 | Charts | ApexCharts + react-apexcharts |
 | Icons | lucide-react |
+| Date formatting | `date-fns` v4 + `date-fns-tz` (Cambodia UTC+7 timezone) |
 
 ---
 
@@ -239,6 +240,33 @@ No test framework is configured yet. Do NOT scaffold tests or suggest a testing 
 
 ---
 
+## Timezone Rules (Cambodia — UTC+7)
+
+The server (Vercel) and database (Supabase) run in **UTC**. Cambodia is **UTC+7**.
+All date helpers live in `src/lib/utils/timezone.ts`. See `docs/timezone-guide.md` for full explanation.
+
+**The four rules to always follow:**
+
+| Situation | Use |
+|-----------|-----|
+| Display any date/time to user | `formatCambodiaDate(date, fmt)` from `@/lib/utils/timezone` |
+| DB query start boundary from a user-selected date | `cambodiaDayStartToUtc(dateStr)` |
+| DB query end boundary from a user-selected date | `cambodiaDayEndToUtc(dateStr)` |
+| Group server-side data by day (charts, order codes) | `toCambodiaDateStr(date)` |
+
+**Never do on the server:**
+
+- `new Date().toISOString().slice(0,10)` → gives UTC date, not Cambodia date
+- `format(date, "HH:mm")` from bare `date-fns` → shows UTC time (-7h)
+- `new Date("YYYY-MM-DDT00:00:00.000Z")` as a query boundary → wrong (UTC midnight ≠ Cambodia midnight)
+
+**On the client (browser = Cambodia):**
+
+- `format(new Date(), "yyyy-MM-dd")` from `date-fns` is OK for getting today's date string
+- Still use `formatCambodiaDate()` for displaying timestamps fetched from the API
+
+---
+
 ## Docs Reference
 
 Detailed documentation lives in `/docs/`:
@@ -253,6 +281,7 @@ Detailed documentation lives in `/docs/`:
 | `docs/workflows/development.md` | Development workflow |
 | `docs/telegram-bot-setup.md` | Telegram notification integration |
 | `docs/production-environment.md` | Production environment setup |
+| `docs/timezone-guide.md` | Cambodia timezone (UTC+7) rules and helpers |
 
 ---
 

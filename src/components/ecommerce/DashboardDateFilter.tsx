@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import flatpickr from "flatpickr";
+import { format } from "date-fns";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CalenderIcon } from "../../icons";
 
@@ -68,8 +69,11 @@ export default function DashboardDateFilter() {
                 '<svg class="stroke-current" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.5 15L12.5 10L7.5 5" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
             onChange: (selectedDates) => {
                 if (selectedDates.length === 2) {
-                    const from = selectedDates[0].toISOString().split("T")[0];
-                    const to = selectedDates[1].toISOString().split("T")[0];
+                    // Use date-fns format() (browser local = Cambodia) instead of
+                    // .toISOString() which returns UTC and can shift the date by -1 day
+                    // for Cambodia users (UTC+7) picking midnight dates.
+                    const from = format(selectedDates[0], "yyyy-MM-dd");
+                    const to   = format(selectedDates[1], "yyyy-MM-dd");
 
                     const params = new URLSearchParams(searchParams.toString());
                     params.set("range", "custom");

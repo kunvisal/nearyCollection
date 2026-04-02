@@ -1,4 +1,11 @@
 import prisma from "../prisma";
+import {
+    toCambodiaDateStr,
+    getCambodiaYear,
+    getCambodiaMonth,
+    cambodiaYearStartToUtc,
+    cambodiaYearEndToUtc,
+} from "../utils/timezone";
 
 export class DashboardRepository {
     static async getMetrics(startDateArg?: string | Date, endDateArg?: string | Date) {
@@ -18,19 +25,22 @@ export class DashboardRepository {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const daysToMap = diffDays === 0 ? 1 : diffDays;
 
-        // Total customers
-        const totalCustomers = await prisma.customer.count({
+        // Total unique customers who placed a paid order in the date range
+        const uniqueBuyers = await prisma.order.findMany({
             where: {
-                createdAt: {
-                    gte: startDate,
-                    lte: endDate
-                }
-            }
+                paymentStatus: 'PAID',
+                orderStatus: { not: 'CANCELLED' },
+                createdAt: { gte: startDate, lte: endDate }
+            },
+            select: { customerId: true },
+            distinct: ['customerId']
         });
+        const totalCustomers = uniqueBuyers.length;
 
-        // Total orders (excluding cancelled) within date range
+        // Total paid orders (excluding cancelled) within date range
         const totalOrders = await prisma.order.count({
             where: {
+                paymentStatus: 'PAID',
                 orderStatus: { not: 'CANCELLED' },
                 createdAt: {
                     gte: startDate,
@@ -73,6 +83,7 @@ export class DashboardRepository {
             select: {
                 createdAt: true,
                 total: true,
+                discount: true,
                 items: {
                     select: {
                         costPriceSnapshot: true,
@@ -83,10 +94,11 @@ export class DashboardRepository {
             }
         });
 
-        const toLocalDateStr = (d: Date) => {
-            const pad = (n: number) => n.toString().padStart(2, '0');
-            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        };
+        // Convert a UTC Date to a Cambodia calendar date string for day-grouping.
+        // DB timestamps are UTC (Supabase runs UTC). toCambodiaDateStr adds +7h
+        // so orders placed at e.g. 00:30 Cambodia time (17:30 UTC prev day) are
+        // bucketed to the correct Cambodia calendar day.
+        const toLocalDateStr = (d: Date) => toCambodiaDateStr(d);
 
         // Group by day string 'YYYY-MM-DD'
         const metricsByDayMap: Record<string, { revenue: number, profit: number }> = {};
@@ -103,13 +115,14 @@ export class DashboardRepository {
                 // Revenue is just the order total
                 metricsByDayMap[dateStr].revenue += Number(order.total);
 
-                // Profit is lineTotal (sale) minus the base cost (costPrice * qty)
+                // Profit = sum(lineTotal - costPrice*qty) minus order-level discount
                 let orderProfit = 0;
                 order.items.forEach(item => {
                     const cost = Number(item.costPriceSnapshot) * item.qty;
                     const saleTotal = Number(item.lineTotal);
                     orderProfit += (saleTotal - cost);
                 });
+                orderProfit -= Number(order.discount);
 
                 metricsByDayMap[dateStr].profit += orderProfit;
             }
@@ -123,16 +136,17 @@ export class DashboardRepository {
 
         const totalProfit = dailyRevenue.reduce((sum, day) => sum + day.profit, 0);
 
-        // Monthly Sales (orders count per month for current year)
-        const currentYear = today.getFullYear();
-        const startOfYear = new Date(currentYear, 0, 1);
+        // Monthly Sales (orders count per month for current Cambodia year)
+        const currentYear = getCambodiaYear(today);
+        const startOfYear = cambodiaYearStartToUtc(currentYear);
+        const endOfYear   = cambodiaYearEndToUtc(currentYear);
 
         const thisYearOrders = await prisma.order.findMany({
             where: {
                 orderStatus: { not: 'CANCELLED' },
                 createdAt: {
                     gte: startOfYear,
-                    lte: new Date(currentYear, 11, 31, 23, 59, 59, 999)
+                    lte: endOfYear
                 }
             },
             select: { createdAt: true }
@@ -143,7 +157,7 @@ export class DashboardRepository {
         };
 
         thisYearOrders.forEach(order => {
-            const month = order.createdAt.getMonth() + 1; // 1-12
+            const month = getCambodiaMonth(order.createdAt); // 1-12 in Cambodia timezone
             salesByMonthMap[month]++;
         });
 

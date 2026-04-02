@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Package, Phone, CheckCircle2, Search, User, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 import Image from "next/image";
 import { useToast } from "@/context/ToastContext";
 import { Modal } from "@/components/ui/modal";
@@ -152,7 +152,7 @@ export default function PackagingWorkflowPage() {
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="font-bold text-gray-900 dark:text-white">#{order.orderCode}</span>
                                         <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded-full font-medium">
-                                            {format(new Date(order.createdAt), "HH:mm, dd MMM")}
+                                            {formatCambodiaDate(order.createdAt, "HH:mm, dd MMM")}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-4 text-sm mt-2">

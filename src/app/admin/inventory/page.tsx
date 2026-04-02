@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import Badge from "@/components/ui/badge/Badge";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
 export const metadata: Metadata = {
@@ -127,7 +127,7 @@ export default async function InventoryAlertsPage() {
                             {recentMoves.map((move) => (
                                 <TableRow key={move.id}>
                                     <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                                        {format(new Date(move.createdAt), "dd MMM yyyy, HH:mm")}
+                                        {formatCambodiaDate(move.createdAt, "dd MMM yyyy, HH:mm")}
                                     </TableCell>
                                     <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90 font-medium">
                                         {move.variant.product.nameKm}

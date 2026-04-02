@@ -8,6 +8,7 @@ import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import { MessengerImport } from "@/components/admin/pos/MessengerImport";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 
 // Reusing types roughly matching the API response
 type Variant = {
@@ -258,7 +259,7 @@ export default function POSPage() {
                 // Show receipt instead of clearing immediately
                 const newReceiptData = {
                     orderCode: res.order.orderCode,
-                    date: new Date().toLocaleString(),
+                    date: formatCambodiaDate(new Date(), "dd/MM/yyyy, HH:mm"),
                     customerName: formData.customerName,
                     customerPhone: formData.customerPhone,
                     deliveryAddress: formData.deliveryAddress,

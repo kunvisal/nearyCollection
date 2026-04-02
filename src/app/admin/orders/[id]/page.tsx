@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, XCircle, Package, Truck, CheckCircle2 } from "lucide-react";
-import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 
 const DELIVERY_SERVICE_LABELS: Record<string, string> = {
     JALAT: "Jalat (ចល័ត)",
@@ -112,7 +112,7 @@ export default function OrderDetailPage() {
                             </span>
                         </h1>
                         <p className="text-sm text-gray-500 mt-1">
-                            Placed on {format(new Date(order.createdAt), "dd MMM yyyy, HH:mm")}
+                            Placed on {formatCambodiaDate(order.createdAt, "dd MMM yyyy, HH:mm")}
                         </p>
                     </div>
                 </div>

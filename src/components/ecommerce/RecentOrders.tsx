@@ -10,7 +10,7 @@ import {
 import Badge from "../ui/badge/Badge";
 import Image from "next/image";
 import Link from "next/link";
-import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 
 interface RecentOrdersProps {
   orders: any[];
@@ -70,7 +70,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                   </div>
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {format(new Date(order.createdAt), "dd MMM yyyy")}
+                  {formatCambodiaDate(order.createdAt, "dd MMM yyyy")}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   ${Number(order.total).toFixed(2)}

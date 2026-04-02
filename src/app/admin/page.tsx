@@ -7,6 +7,12 @@ import StatisticsChart from "@/components/ecommerce/StatisticsChart";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
 import DashboardAlerts from "@/components/ecommerce/DashboardAlerts";
 import DashboardDateFilter from "@/components/ecommerce/DashboardDateFilter";
+import {
+  toCambodiaDateStr,
+  subtractDays,
+  cambodiaDayStartToUtc,
+  cambodiaDayEndToUtc,
+} from "@/lib/utils/timezone";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | Neary Collection",
@@ -27,51 +33,44 @@ export default async function Ecommerce({
   const fromParam = resolvedParams.from as string | undefined;
   const toParam = resolvedParams.to as string | undefined;
 
-  const now = new Date();
+  // All boundaries are computed in Cambodia timezone (UTC+7).
+  // toCambodiaDateStr converts server UTC "now" → Cambodia calendar date string.
+  // cambodiaDayStartToUtc / cambodiaDayEndToUtc then convert that back to the
+  // correct UTC Date boundaries for Prisma queries.
+  const todayStr = toCambodiaDateStr(new Date());
 
-  let currentStart = new Date(now);
-  let currentEnd = new Date(now);
-  let previousStart = new Date(now);
-  let previousEnd = new Date(now);
+  let currentStart: Date;
+  let currentEnd: Date;
+  let previousStart: Date;
+  let previousEnd: Date;
 
   if (range === 'custom' && fromParam && toParam) {
-    const parseLocalDate = (value: string, endOfDay: boolean) => {
-      return new Date(`${value}T${endOfDay ? "23:59:59.999" : "00:00:00"}`);
-    };
+    // fromParam / toParam are Cambodia calendar date strings ("YYYY-MM-DD")
+    // sent by the date picker running in the user's browser.
+    currentStart = cambodiaDayStartToUtc(fromParam);
+    currentEnd   = cambodiaDayEndToUtc(toParam);
 
-    currentStart = parseLocalDate(fromParam, false);
-    currentEnd = parseLocalDate(toParam, true);
+    const diffDays =
+      Math.ceil((currentEnd.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24)) || 1;
 
-    const diffTime = currentEnd.getTime() - currentStart.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-
-    previousEnd = new Date(currentStart);
-    previousEnd.setMilliseconds(previousEnd.getMilliseconds() - 1);
-    previousStart = new Date(previousEnd);
-    previousStart.setDate(previousStart.getDate() - (diffDays - 1));
-    previousStart.setHours(0, 0, 0, 0);
+    previousEnd   = cambodiaDayEndToUtc(subtractDays(fromParam, 1));
+    previousStart = cambodiaDayStartToUtc(subtractDays(fromParam, diffDays));
   } else if (range === 'today') {
-    currentStart.setHours(0, 0, 0, 0);
-    previousEnd = new Date(currentStart);
-    previousEnd.setMilliseconds(previousEnd.getMilliseconds() - 1);
-    previousStart = new Date(previousEnd);
-    previousStart.setHours(0, 0, 0, 0);
+    currentStart  = cambodiaDayStartToUtc(todayStr);
+    currentEnd    = cambodiaDayEndToUtc(todayStr);
+    const yesterdayStr = subtractDays(todayStr, 1);
+    previousStart = cambodiaDayStartToUtc(yesterdayStr);
+    previousEnd   = cambodiaDayEndToUtc(yesterdayStr);
   } else if (range === '7d') {
-    currentStart.setDate(now.getDate() - 6);
-    currentStart.setHours(0, 0, 0, 0);
-    previousEnd = new Date(currentStart);
-    previousEnd.setMilliseconds(previousEnd.getMilliseconds() - 1);
-    previousStart = new Date(previousEnd);
-    previousStart.setDate(previousStart.getDate() - 6);
-    previousStart.setHours(0, 0, 0, 0);
+    currentStart  = cambodiaDayStartToUtc(subtractDays(todayStr, 6));
+    currentEnd    = cambodiaDayEndToUtc(todayStr);
+    previousEnd   = cambodiaDayEndToUtc(subtractDays(todayStr, 7));
+    previousStart = cambodiaDayStartToUtc(subtractDays(todayStr, 13));
   } else { // default 30d
-    currentStart.setDate(now.getDate() - 29);
-    currentStart.setHours(0, 0, 0, 0);
-    previousEnd = new Date(currentStart);
-    previousEnd.setMilliseconds(previousEnd.getMilliseconds() - 1);
-    previousStart = new Date(previousEnd);
-    previousStart.setDate(previousStart.getDate() - 29);
-    previousStart.setHours(0, 0, 0, 0);
+    currentStart  = cambodiaDayStartToUtc(subtractDays(todayStr, 29));
+    currentEnd    = cambodiaDayEndToUtc(todayStr);
+    previousEnd   = cambodiaDayEndToUtc(subtractDays(todayStr, 30));
+    previousStart = cambodiaDayStartToUtc(subtractDays(todayStr, 59));
   }
 
   const [metrics, previousMetrics] = await Promise.all([

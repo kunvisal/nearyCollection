@@ -8,6 +8,7 @@ import { MessengerImport } from "@/components/admin/pos/MessengerImport";
 import { useRouter } from "next/navigation";
 import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 
 // Reusing types roughly matching the API response
@@ -335,7 +336,7 @@ export default function EditOrderClient({ order }: { order: any }) {
                 // Show receipt instead of clearing immediately
                 const newReceiptData = {
                     orderCode: res.order.orderCode,
-                    date: new Date().toLocaleString(),
+                    date: formatCambodiaDate(new Date(), "dd/MM/yyyy, HH:mm"),
                     customerName: formData.customerName,
                     customerPhone: formData.customerPhone,
                     deliveryAddress: formData.deliveryAddress,

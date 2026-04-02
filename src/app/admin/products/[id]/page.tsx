@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Plus, Edit2, Trash2, ArrowLeft, Upload, Image as ImageIcon, History, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/context/ToastContext";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 import imageCompression from 'browser-image-compression';
 
 type Variant = {
@@ -555,7 +556,7 @@ export default function ManageProductPage() {
                                     <tbody>
                                         {inventoryLogs.map(log => (
                                             <tr key={log.id} className="border-t border-gray-100 dark:border-gray-700">
-                                                <td className="px-4 py-3 whitespace-nowrap">{new Date(log.createdAt).toLocaleString()}</td>
+                                                <td className="px-4 py-3 whitespace-nowrap">{formatCambodiaDate(log.createdAt, "dd MMM yyyy, HH:mm")}</td>
                                                 <td className="px-4 py-3">
                                                     <span className={`px - 2 py - 0.5 rounded text - xs font - semibold ${log.type === "IN" ? "bg-green-100 text-green-800" :
                                                         log.type === "OUT" ? "bg-red-100 text-red-800" :

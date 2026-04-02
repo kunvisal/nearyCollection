@@ -1,6 +1,6 @@
 import React from "react";
 import { OrderRepository } from "@/lib/repositories/orderRepository";
-import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 import PrintButton from "./PrintButton";
@@ -31,7 +31,7 @@ export default async function PrintOrderReceipt({ params }: { params: Promise<{ 
                 <div className="text-right">
                     <h2 className="text-2xl font-bold uppercase text-gray-800">RECEIPT</h2>
                     <p className="mt-2 text-sm font-medium">Order: #{order.orderCode}</p>
-                    <p className="text-sm">Date: {format(new Date(order.createdAt), "dd MMM yyyy, HH:mm")}</p>
+                    <p className="text-sm">Date: {formatCambodiaDate(order.createdAt, "dd MMM yyyy, HH:mm")}</p>
                 </div>
             </div>
 

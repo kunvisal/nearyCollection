@@ -83,7 +83,10 @@ export class OrderRepository {
             // Total should not be negative
             const total = Math.max(0, subtotal - orderDiscount + deliveryCharge);
 
-            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            // Use Cambodia date so order codes reflect the local business day,
+            // not UTC (which can be a different calendar day before 07:00 Cambodia time).
+            const { toCambodiaDateStr } = await import("@/lib/utils/timezone");
+            const dateStr = toCambodiaDateStr(new Date()).replace(/-/g, '');
             const randomPart = Math.floor(1000 + Math.random() * 9000);
             const orderCode = `NC-${dateStr}-${randomPart}`;
 

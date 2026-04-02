@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Eye, Search, Printer, Calendar, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
+import { formatCambodiaDate } from "@/lib/utils/timezone";
 
 type Order = {
     id: string;
@@ -20,7 +21,9 @@ type Order = {
 };
 
 function getTodayStr() {
-    return new Date().toISOString().slice(0, 10);
+    // Use browser local time (Cambodia UTC+7) instead of .toISOString() which
+    // returns UTC and would give yesterday's date before 07:00 AM Cambodia time.
+    return format(new Date(), "yyyy-MM-dd");
 }
 
 export default function OrdersPage() {
@@ -289,7 +292,7 @@ export default function OrdersPage() {
                                             {order.orderCode}
                                         </td>
                                         <td className="px-4 py-4">
-                                            {format(new Date(order.createdAt), "dd MMM yyyy, HH:mm")}
+                                            {formatCambodiaDate(order.createdAt, "dd MMM yyyy, HH:mm")}
                                         </td>
                                         <td className="px-4 py-4">
                                             <div className="font-medium text-gray-900 dark:text-white">{order.customer.fullName}</div>
