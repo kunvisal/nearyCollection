@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, List, Loader2 } from "lucide-react";
+import { Plus, Edit2, Trash2, List, Loader2, Search } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { ProductsSkeleton } from "@/components/skeletons/ProductsSkeleton";
 
@@ -29,6 +29,10 @@ export default function ProductsPage() {
     const [formData, setFormData] = useState({
         nameKm: "", nameEn: "", descriptionKm: "", descriptionEn: "", categoryId: 0, isActive: true
     });
+    const [searchTerm, setSearchTerm] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
 
     const fetchData = async () => {
         try {
@@ -57,6 +61,24 @@ export default function ProductsPage() {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const filteredProducts = products.filter((p) => {
+        const matchesSearch =
+            !debouncedSearch ||
+            p.nameKm.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            (p.nameEn ?? "").toLowerCase().includes(debouncedSearch.toLowerCase());
+        const matchesCategory =
+            !categoryFilter || p.categoryId === Number(categoryFilter);
+        const matchesStatus =
+            !statusFilter ||
+            (statusFilter === "active" ? p.isActive : !p.isActive);
+        return matchesSearch && matchesCategory && matchesStatus;
+    });
 
     const openAddModal = () => {
         setEditingProduct(null);
@@ -149,6 +171,44 @@ export default function ProductsPage() {
                 </button>
             </div>
 
+            <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="ស្វែងរក product... / Search products..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                </div>
+                <select
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="">All Categories</option>
+                    {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                            {cat.nameKm}{cat.nameEn ? ` (${cat.nameEn})` : ""}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="hidden">Hidden</option>
+                </select>
+            </div>
+
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+                Showing {filteredProducts.length} of {products.length} products
+            </p>
+
             <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -168,14 +228,16 @@ export default function ProductsPage() {
                                         Loading products...
                                     </td>
                                 </tr>
-                            ) : products.length === 0 ? (
+                            ) : filteredProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                        No products found. Click "Add Product" to create one.
+                                        {products.length === 0
+                                            ? `No products found. Click "Add Product" to create one.`
+                                            : "No products match your search or filters."}
                                     </td>
                                 </tr>
                             ) : (
-                                products.map((prod) => (
+                                filteredProducts.map((prod) => (
                                     <tr key={prod.id} className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-gray-900 dark:text-white">{prod.nameKm}</div>
