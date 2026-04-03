@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Plus, Edit2, Trash2, ArrowLeft, Upload, Image as ImageIcon, History, Loader2 } from "lucide-react";
+import { ProductDetailSkeleton } from "@/components/skeletons/ProductDetailSkeleton";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/context/ToastContext";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
@@ -240,7 +241,7 @@ export default function ManageProductPage() {
         }
     };
 
-    if (isLoading) return <div className="p-8 text-center">Loading product details...</div>;
+    if (isLoading) return <ProductDetailSkeleton />;
     if (!product) return null;
 
     return (

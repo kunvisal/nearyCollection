@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Truck, Phone, CheckCircle2, XCircle, Search, MapPin, User, Loader2 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import { format } from "date-fns";
+import { DeliverySkeleton } from "@/components/skeletons/DeliverySkeleton";
 
 type Order = {
     id: string;
@@ -103,6 +104,8 @@ export default function DeliveryWorkflowPage() {
         o.customer.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.customer.phone.includes(searchQuery)
     );
+
+    if (isLoading) return <DeliverySkeleton />;
 
     return (
         <div className="space-y-6">

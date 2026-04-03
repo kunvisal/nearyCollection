@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { InventoryAlertService } from "@/lib/services/inventoryAlertService";
 import { Metadata } from "next";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
@@ -6,13 +6,22 @@ import Badge from "@/components/ui/badge/Badge";
 import Link from "next/link";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import { InventorySkeleton } from "@/components/skeletons/InventorySkeleton";
 
 export const metadata: Metadata = {
     title: "Inventory Alerts | Neary Collection Admin",
     description: "View low stock alerts and recent inventory movements.",
 };
 
-export default async function InventoryAlertsPage() {
+export default function InventoryAlertsPage() {
+    return (
+        <Suspense fallback={<InventorySkeleton />}>
+            <InventoryContent />
+        </Suspense>
+    );
+}
+
+async function InventoryContent() {
     const { lowStockVariants, recentMoves } = await InventoryAlertService.getDashboardAlerts();
 
     return (

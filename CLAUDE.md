@@ -285,9 +285,91 @@ Detailed documentation lives in `/docs/`:
 
 ---
 
+## Skeleton Loading Animations
+
+Every admin page that fetches data **must** show a skeleton while loading. The system is already wired up — you only need to follow the pattern.
+
+### Infrastructure (already exists — do not recreate)
+
+| File | Purpose |
+|------|---------|
+| `src/styles/skeleton.css` | Single `.skeleton-box` class + `@keyframes shimmer` — imported once in admin layout |
+| `src/app/globals.css` | `--color-background-secondary` / `--color-background-tertiary` semantic tokens (light + dark) |
+| `src/app/admin/layout.tsx` | `import "@/styles/skeleton.css"` — covers the entire admin app |
+| `src/components/skeletons/primitives.tsx` | `SkeletonBox`, `SkeletonText`, `SkeletonAvatar` — use these, never raw divs |
+
+### Existing skeleton components
+
+`src/components/skeletons/` already contains:
+`DashboardSkeleton`, `OrdersSkeleton`, `OrderDetailSkeleton`, `ProductsSkeleton`, `ProductDetailSkeleton`, `CategoriesSkeleton`, `InventorySkeleton`, `DeliverySkeleton`, `SettingsSkeleton`
+
+### When to add a skeleton for a NEW page or section
+
+**Decision rule — Data fetch > 200ms or unknown duration → Skeleton. Button action / form submit → Spinner. Instant local state change → nothing.**
+
+#### New server component page
+
+```tsx
+// src/app/admin/new-feature/page.tsx
+import { Suspense } from "react";
+import { NewFeatureSkeleton } from "@/components/skeletons/NewFeatureSkeleton";
+
+export default function NewFeaturePage() {
+  return (
+    <Suspense fallback={<NewFeatureSkeleton />}>
+      <NewFeatureContent />
+    </Suspense>
+  );
+}
+
+async function NewFeatureContent() {
+  const data = await SomeService.getData(); // data fetch here, inside the child
+  return ( /* real JSX */ );
+}
+```
+
+#### New client component page
+
+```tsx
+// At the top of the component render, before the main return:
+if (isLoading) return <NewFeatureSkeleton />;
+```
+
+### How to build a new skeleton component
+
+1. **Read the real page first** — understand every grid, card, and spacing class before writing a single skeleton line.
+2. **File location:** `src/components/skeletons/NewFeatureSkeleton.tsx`
+3. **Name:** `<PageNameSkeleton>` matching the page name exactly.
+4. **No `"use client"`** — skeletons are static, they need no interactivity.
+5. **Mirror the layout exactly:** same grid columns, same card sizes, same spacing. Replace text → `SkeletonBox h-4`, images → `SkeletonBox aspect-square`, charts → bar groups of `SkeletonBox`.
+6. **Wrap each card** with the same border/bg classes as the real card:
+
+   ```text
+   rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]
+   ```
+
+7. **No hardcoded colors** — use only `skeleton-box` className; never set `background`, `backgroundColor`, or hex colors directly.
+8. **No props** — skeletons are static, zero props required.
+
+### Color / dark mode rules
+
+- Use `.skeleton-box` class (from `skeleton.css`) on every placeholder element.
+- The shimmer automatically adapts to dark mode via `--color-background-secondary` / `--color-background-tertiary`.
+- Never use `opacity` hacks, hardcoded grays, or the old `Skeleton.module.css` shimmer for admin components.
+
+### What NOT to do
+
+- Do NOT redefine `@keyframes shimmer` in a new file — it already exists in `skeleton.css`.
+- Do NOT use `<div className="animate-pulse bg-gray-200">` — use `skeleton-box` instead.
+- Do NOT create a skeleton for button actions or instant state changes.
+- Do NOT use `Skeleton.module.css` for admin pages — that file is legacy, used only by shop components.
+
+---
+
 ## Suggested Improvements (Pending)
 
 These are known gaps that would improve AI assistance and code quality:
 
 1. **Create `src/types/`** — the coding style guide specifies shared interfaces go here, but the folder does not exist yet. Moving shared TypeScript interfaces there avoids duplication.
 2. **Add intent comments on complex transaction flows** — `orderRepository.ts` contains long transactional code. A short comment per transaction block explaining the business intent helps AI avoid misreading the logic.
+3. **Migrate `Skeleton.module.css`** — `src/components/ui/Skeleton.module.css` (used by shop components) still uses hardcoded hex colors. Migrate shop skeletons to use `.skeleton-box` and delete the old file.

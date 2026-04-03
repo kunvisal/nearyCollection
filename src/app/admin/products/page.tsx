@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, List, Loader2 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { ProductsSkeleton } from "@/components/skeletons/ProductsSkeleton";
 
 type Category = { id: number; nameKm: string; nameEn: string | null; };
 type Product = {
@@ -132,6 +133,8 @@ export default function ProductsPage() {
             console.error(error);
         }
     };
+
+    if (isLoading) return <ProductsSkeleton />;
 
     return (
         <div className="space-y-6">

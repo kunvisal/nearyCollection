@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Save, Loader2, Send } from "lucide-react";
+import { SettingsSkeleton } from "@/components/skeletons/SettingsSkeleton";
 
 export default function SettingsPage() {
     const [settings, setSettings] = useState<any>(null);
@@ -105,9 +106,7 @@ export default function SettingsPage() {
         }
     };
 
-    if (isLoading) {
-        return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>;
-    }
+    if (isLoading) return <SettingsSkeleton />;
 
     return (
         <div className="space-y-6 pb-10 max-w-4xl">

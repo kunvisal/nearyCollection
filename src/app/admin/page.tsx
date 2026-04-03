@@ -13,6 +13,7 @@ import {
   cambodiaDayStartToUtc,
   cambodiaDayEndToUtc,
 } from "@/lib/utils/timezone";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | Neary Collection",
@@ -23,6 +24,18 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Ecommerce({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function DashboardContent({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>

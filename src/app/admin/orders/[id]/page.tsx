@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CheckCircle, XCircle, Package, Truck, CheckCircle2 } from "lucide-react";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
+import { OrderDetailSkeleton } from "@/components/skeletons/OrderDetailSkeleton";
 
 const DELIVERY_SERVICE_LABELS: Record<string, string> = {
     JALAT: "Jalat (ចល័ត)",
@@ -88,7 +89,7 @@ export default function OrderDetailPage() {
         }
     };
 
-    if (isLoading) return <div className="p-8 text-center text-gray-500">Loading order details...</div>;
+    if (isLoading) return <OrderDetailSkeleton />;
     if (!order) return null;
 
     return (

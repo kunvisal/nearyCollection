@@ -1,5 +1,6 @@
 "use client";
 
+import "@/styles/skeleton.css";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";

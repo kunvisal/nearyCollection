@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit2, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
+import { CategoriesSkeleton } from "@/components/skeletons/CategoriesSkeleton";
 
 type Category = {
     id: number;
@@ -105,6 +106,8 @@ export default function CategoriesPage() {
             console.error(error);
         }
     };
+
+    if (isLoading) return <CategoriesSkeleton />;
 
     return (
         <div className="space-y-6">

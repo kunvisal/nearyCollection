@@ -5,6 +5,7 @@ import { Eye, Search, Printer, Calendar, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
+import { OrdersSkeleton } from "@/components/skeletons/OrdersSkeleton";
 
 type Order = {
     id: string;
@@ -143,6 +144,8 @@ export default function OrdersPage() {
         const ids = Array.from(selectedIds).join(",");
         window.open(`/print/orders?ids=${ids}`, "_blank");
     };
+
+    if (isLoading) return <OrdersSkeleton />;
 
     return (
         <div className="space-y-6">
