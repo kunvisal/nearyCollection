@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
-import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon } from "lucide-react";
+import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon, ExternalLink } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
 import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
@@ -56,6 +56,7 @@ export default function POSPage() {
     const [categories, setCategories] = useState<{ id: number, nameKm: string }[]>([]);
     const [activeCategoryId, setActiveCategoryId] = useState<number | 'ALL'>('ALL');
     const [searchQuery, setSearchQuery] = useState("");
+    const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'OUT_OF_STOCK'>('ALL');
     const [isLoading, setIsLoading] = useState(true);
 
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -111,8 +112,17 @@ export default function POSPage() {
                 (p.nameEn && p.nameEn.toLowerCase().includes(lowerSearch))
             );
         }
+        if (stockFilter === 'IN_STOCK') {
+            filtered = filtered.filter(p =>
+                p.variants.some(v => (v.stockOnHand - v.reservedQty) > 0)
+            );
+        } else if (stockFilter === 'OUT_OF_STOCK') {
+            filtered = filtered.filter(p =>
+                p.variants.every(v => (v.stockOnHand - v.reservedQty) <= 0)
+            );
+        }
         setFilteredProducts(filtered);
-    }, [searchQuery, products, activeCategoryId]);
+    }, [searchQuery, products, activeCategoryId, stockFilter]);
 
     const fetchCategories = async () => {
         try {
@@ -450,6 +460,28 @@ export default function POSPage() {
                             </button>
                         ))}
                     </div>
+                    {/* Stock Filter Tabs */}
+                    <div className="flex gap-2 pt-2 pb-3">
+                        {([
+                            { key: 'ALL', label: 'ទាំងអស់' },
+                            { key: 'IN_STOCK', label: 'មានស្តុក' },
+                            { key: 'OUT_OF_STOCK', label: 'អស់ស្តុក' },
+                        ] as const).map(({ key, label }) => (
+                            <button
+                                key={key}
+                                onClick={() => setStockFilter(key)}
+                                className={`px-3 py-1 rounded-full text-xs font-bold border transition-colors ${
+                                    stockFilter === key
+                                        ? key === 'OUT_OF_STOCK'
+                                            ? 'bg-red-500 text-white border-red-500'
+                                            : 'bg-[#e21b70] text-white border-[#e21b70]'
+                                        : 'bg-transparent text-gray-500 border-gray-200 dark:border-gray-700 hover:border-gray-400'
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Product Scrollable Area */}
@@ -484,6 +516,17 @@ export default function POSPage() {
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon className="w-8 h-8 opacity-50" /></div>
                                             )}
+                                            {/* Quick Update Stock Link */}
+                                            <a
+                                                href={`/admin/products/${product.id}#variants`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                title="Update stock"
+                                                className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
                                             {/* Quick Add Button / Counter inside Image */}
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleProductClick(product); }}
@@ -808,9 +851,21 @@ export default function POSPage() {
                     <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full max-w-md sm:max-w-xl mx-auto flex flex-col relative animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 max-h-[85vh] sm:max-h-[90vh] shadow-2xl overflow-hidden">
                         <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center shrink-0 bg-white dark:bg-gray-900 z-10">
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">{selectedProduct?.nameKm}</h2>
-                            <button onClick={() => { setIsProductModalOpen(false); setSelectedProduct(null); }} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                                <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <a
+                                    href={`/admin/products/${selectedProduct?.id}#variants`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title="Update stock"
+                                    className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-medium"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Update stock</span>
+                                </a>
+                                <button onClick={() => { setIsProductModalOpen(false); setSelectedProduct(null); }} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                                    <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                                </button>
+                            </div>
                         </div>
                         <div className="p-4 overflow-y-auto flex-1 min-h-0">
                             <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Choose variation</h3>
@@ -844,7 +899,16 @@ export default function POSPage() {
                                                     ${Number(variant.salePrice).toFixed(2)}
                                                 </div>
                                                 {isOutOfStock ? (
-                                                    <span className="text-xs text-gray-400 font-medium">អស់ស្តុក</span>
+                                                    <a
+                                                        href={`/admin/products/${selectedProduct?.id}#variants`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="flex items-center gap-1 text-xs text-[#e21b70] font-semibold hover:underline"
+                                                    >
+                                                        <ExternalLink className="w-3 h-3" />
+                                                        បំពេញស្តុក
+                                                    </a>
                                                 ) : (
                                                     <div className="w-8 h-8 rounded-full bg-[#e21b70] text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
                                                         <Plus className="w-4 h-4" />
