@@ -132,11 +132,14 @@ export default function POSPage() {
             const res = await fetch("/api/admin/products");
             const json = await res.json();
             if (json.success) {
-                // Filter only products with active variants and stock
-                const activeProds = json.data.map((p: any) => ({
-                    ...p,
-                    variants: p.variants.filter((v: any) => (v.stockOnHand - v.reservedQty) > 0)
-                })).filter((p: any) => p.variants.length > 0 && p.isActive);
+                // Show all active products/variants, including out-of-stock ones
+                const activeProds = json.data
+                    .filter((p: any) => p.isActive)
+                    .map((p: any) => ({
+                        ...p,
+                        variants: p.variants.filter((v: any) => v.isActive)
+                    }))
+                    .filter((p: any) => p.variants.length > 0);
 
                 setProducts(activeProds);
             }
@@ -154,11 +157,11 @@ export default function POSPage() {
 
     const addToCart = (variant: Variant, product: Product) => {
         setCart(prev => {
+            const maxStock = variant.stockOnHand - variant.reservedQty;
             const existingIndex = prev.findIndex(item => item.variantId === variant.id);
             if (existingIndex >= 0) {
                 // check stock limit
                 const currentQty = prev[existingIndex].qty;
-                const maxStock = variant.stockOnHand - variant.reservedQty;
                 if (currentQty >= maxStock) {
                     addToast("warning", "Stock Limit", 'Not enough stock available.');
                     return prev;
@@ -166,6 +169,10 @@ export default function POSPage() {
                 const newCart = [...prev];
                 newCart[existingIndex] = { ...newCart[existingIndex], qty: currentQty + 1 };
                 return newCart;
+            }
+            if (maxStock <= 0) {
+                addToast("warning", "Out of Stock", 'This item is out of stock.');
+                return prev;
             }
             return [...prev, {
                 variantId: variant.id,
@@ -467,7 +474,8 @@ export default function POSPage() {
                             {filteredProducts.map(product => {
                                 const totalInCart = cart.filter(c => c.productId === product.id).reduce((sum, c) => sum + c.qty, 0);
                                 const totalAvailableStock = product.variants.reduce((sum, v) => sum + (v.stockOnHand - v.reservedQty), 0);
-                                const isLowStock = totalAvailableStock <= 5;
+                                const isOutOfStock = totalAvailableStock === 0;
+                                const isLowStock = !isOutOfStock && totalAvailableStock <= 5;
                                 return (
                                     <div key={product.id} className="relative group cursor-pointer" onClick={() => handleProductClick(product)}>
                                         <div className="aspect-square relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-2">
@@ -493,7 +501,13 @@ export default function POSPage() {
                                             <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
                                                 from ${product.variants.length > 0 ? Math.min(...product.variants.map(v => Number(v.salePrice))).toFixed(2) : "0.00"}
                                             </div>
-                                            <div className={`text-[11px] px-1.5 py-0.5 rounded-md border font-bold ${isLowStock ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50' : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'}`}>
+                                            <div className={`text-[11px] px-1.5 py-0.5 rounded-md border font-bold ${
+                                                isOutOfStock
+                                                    ? 'bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-800 dark:text-gray-600 dark:border-gray-700'
+                                                    : isLowStock
+                                                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50'
+                                                        : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                            }`}>
                                                 {totalAvailableStock} in stock
                                             </div>
                                         </div>
@@ -803,11 +817,17 @@ export default function POSPage() {
                             <div className="space-y-3">
                                 {selectedProduct?.variants.map((variant) => {
                                     const availableStock = variant.stockOnHand - variant.reservedQty;
+                                    const isOutOfStock = availableStock <= 0;
                                     return (
                                         <button
                                             key={variant.id}
-                                            onClick={() => selectedProduct && addToCart(variant, selectedProduct)}
-                                            className="w-full text-left p-4 rounded-xl border-2 border-gray-100 dark:border-gray-800 hover:border-[#e21b70] hover:bg-[#e21b70]/5 transition-all flex justify-between items-center cursor-pointer group"
+                                            onClick={() => !isOutOfStock && selectedProduct && addToCart(variant, selectedProduct)}
+                                            disabled={isOutOfStock}
+                                            className={`w-full text-left p-4 rounded-xl border-2 transition-all flex justify-between items-center ${
+                                                isOutOfStock
+                                                    ? 'border-gray-100 dark:border-gray-800 opacity-50 cursor-not-allowed'
+                                                    : 'border-gray-100 dark:border-gray-800 hover:border-[#e21b70] hover:bg-[#e21b70]/5 cursor-pointer group'
+                                            }`}
                                         >
                                             <div>
                                                 <div className="font-semibold text-gray-900 dark:text-white capitalize flex items-center gap-2 text-[15px]">
@@ -816,16 +836,20 @@ export default function POSPage() {
                                                 <div className="text-sm text-gray-500 mt-1 flex gap-2 items-center">
                                                     <span>SKU: {variant.sku}</span>
                                                     <span>•</span>
-                                                    <span className={`${availableStock <= 2 ? 'text-red-500' : 'text-gray-500'}`}>Stock: {availableStock}</span>
+                                                    <span className={`${isOutOfStock ? 'text-red-500 font-semibold' : availableStock <= 2 ? 'text-red-500' : 'text-gray-500'}`}>Stock: {availableStock}</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <div className="text-[17px] font-bold text-gray-900 dark:text-white">
                                                     ${Number(variant.salePrice).toFixed(2)}
                                                 </div>
-                                                <div className="w-8 h-8 rounded-full bg-[#e21b70] text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                                                    <Plus className="w-4 h-4" />
-                                                </div>
+                                                {isOutOfStock ? (
+                                                    <span className="text-xs text-gray-400 font-medium">អស់ស្តុក</span>
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-[#e21b70] text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                                                        <Plus className="w-4 h-4" />
+                                                    </div>
+                                                )}
                                             </div>
                                         </button>
                                     );
