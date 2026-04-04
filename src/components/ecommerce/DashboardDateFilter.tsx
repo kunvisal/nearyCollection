@@ -4,24 +4,28 @@ import flatpickr from "flatpickr";
 import { format } from "date-fns";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CalenderIcon } from "../../icons";
+import { useFilterTransition } from "./DashboardFilterProvider";
 
 export default function DashboardDateFilter() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const pathname = usePathname();
     const datePickerRef = useRef<HTMLInputElement>(null);
+    const { startFilterTransition } = useFilterTransition();
 
     const fromParam = searchParams.get("from");
     const toParam = searchParams.get("to");
     const rangeParam = searchParams.get("range");
-    const currentRange = rangeParam || (fromParam && toParam ? "custom" : "30d");
+    const currentRange = rangeParam || (fromParam && toParam ? "custom" : "7d");
 
     const setRange = (range: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("range", range);
         params.delete("from");
         params.delete("to");
-        router.push(`${pathname}?${params.toString()}`);
+        startFilterTransition(() => {
+            router.push(`${pathname}?${params.toString()}`);
+        });
     };
 
     useEffect(() => {
@@ -79,7 +83,9 @@ export default function DashboardDateFilter() {
                     params.set("range", "custom");
                     params.set("from", from);
                     params.set("to", to);
-                    router.push(`${pathname}?${params.toString()}`);
+                    startFilterTransition(() => {
+                        router.push(`${pathname}?${params.toString()}`);
+                    });
                 }
             }
         });
@@ -89,7 +95,7 @@ export default function DashboardDateFilter() {
                 fp.destroy();
             }
         };
-    }, [currentRange, fromParam, toParam, pathname, router, searchParams]);
+    }, [currentRange, fromParam, toParam, pathname, router, searchParams, startFilterTransition]);
 
     const getPillStyle = (range: string) => {
         const isActive = currentRange === range;
