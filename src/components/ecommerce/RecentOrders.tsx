@@ -58,21 +58,17 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
             {orders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell className="py-3">
-                  <div className="flex items-center gap-3">
-                    <div>
-                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {order.orderCode}
-                      </p>
-                      <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                        {order.customer?.fullName}
-                      </span>
-                    </div>
-                  </div>
+                  <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 whitespace-nowrap">
+                    {order.orderCode}
+                  </p>
+                  <span className="text-gray-500 text-theme-xs dark:text-gray-400 whitespace-nowrap">
+                    {order.customer?.fullName}
+                  </span>
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {formatCambodiaDate(order.createdAt, "dd MMM yyyy")}
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
+                  {formatCambodiaDate(order.createdAt, "dd MMM")}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
                   ${Number(order.total).toFixed(2)}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
@@ -91,7 +87,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                     {order.orderStatus}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-3 text-right">
+                <TableCell className="py-3 text-right whitespace-nowrap">
                   <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">View</Link>
                 </TableCell>
               </TableRow>
