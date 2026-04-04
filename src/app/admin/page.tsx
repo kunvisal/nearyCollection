@@ -14,6 +14,7 @@ import {
   cambodiaDayEndToUtc,
 } from "@/lib/utils/timezone";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
+import { DashboardFilterProvider } from "@/components/ecommerce/DashboardFilterProvider";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | Neary Collection",
@@ -29,9 +30,11 @@ export default async function Ecommerce({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
-      <DashboardContent searchParams={searchParams} />
-    </Suspense>
+    <DashboardFilterProvider>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent searchParams={searchParams} />
+      </Suspense>
+    </DashboardFilterProvider>
   );
 }
 
@@ -42,7 +45,7 @@ async function DashboardContent({
 }) {
   const resolvedParams = await searchParams;
   const range = (resolvedParams.range as string)
-    || ((resolvedParams.from && resolvedParams.to) ? "custom" : "30d");
+    || ((resolvedParams.from && resolvedParams.to) ? "custom" : "7d");
   const fromParam = resolvedParams.from as string | undefined;
   const toParam = resolvedParams.to as string | undefined;
 
