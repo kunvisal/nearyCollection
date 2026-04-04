@@ -57,7 +57,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
             {orders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="py-3">
+                <TableCell className="py-3 align-top">
                   <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90 whitespace-nowrap">
                     {order.orderCode}
                   </p>
@@ -65,13 +65,13 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                     {order.customer?.fullName}
                   </span>
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
+                <TableCell className="py-3 align-top text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
                   {formatCambodiaDate(order.createdAt, "dd MMM")}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
+                <TableCell className="py-3 align-top text-gray-500 text-theme-sm dark:text-gray-400 whitespace-nowrap">
                   ${Number(order.total).toFixed(2)}
                 </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                <TableCell className="py-3 align-top text-gray-500 text-theme-sm dark:text-gray-400">
                   <Badge
                     size="sm"
                     color={
@@ -87,7 +87,7 @@ export default function RecentOrders({ orders }: RecentOrdersProps) {
                     {order.orderStatus}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-3 text-right whitespace-nowrap">
+                <TableCell className="py-3 align-top text-right whitespace-nowrap">
                   <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">View</Link>
                 </TableCell>
               </TableRow>
