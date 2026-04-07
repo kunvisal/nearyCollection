@@ -50,10 +50,10 @@ async function InventoryContent() {
                                 <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Variant Attributes
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400 whitespace-nowrap">
+                                <TableCell isHeader className="py-3 px-4 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Current Stock
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400 whitespace-nowrap">
+                                <TableCell isHeader className="py-3 px-4 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Action
                                 </TableCell>
                             </TableRow>
@@ -70,7 +70,7 @@ async function InventoryContent() {
                                         <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                             {attributesStr || "N/A"}
                                         </TableCell>
-                                        <TableCell className="py-3 text-center whitespace-nowrap">
+                                        <TableCell className="py-3 px-4 text-center whitespace-nowrap">
                                             <Badge
                                                 color={variant.stockOnHand === 0 ? "error" : "warning"}
                                                 size="sm"
@@ -78,7 +78,7 @@ async function InventoryContent() {
                                                 {variant.stockOnHand} in stock
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="py-3 text-right whitespace-nowrap">
+                                        <TableCell className="py-3 px-4 text-right whitespace-nowrap">
                                             <Link
                                                 href={`/admin/products/${variant.productId}#variants`}
                                                 className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800"
