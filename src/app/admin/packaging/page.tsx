@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Package, Phone, CheckCircle2, Search, User, Loader2, ChevronDown } from "lucide-react";
+import { Package, Phone, CheckCircle2, Search, User, Loader2, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import Image from "next/image";
 import { useToast } from "@/context/ToastContext";
@@ -115,6 +115,16 @@ export default function PackagingWorkflowPage() {
         });
     };
 
+    const allCollapsed = filteredOrders.length > 0 && filteredOrders.every(o => collapsedIds.has(o.id));
+
+    const toggleCollapseAll = () => {
+        if (allCollapsed) {
+            setCollapsedIds(new Set());
+        } else {
+            setCollapsedIds(new Set(filteredOrders.map(o => o.id)));
+        }
+    };
+
     // --- Selection helpers ---
     const toggleSelect = (id: string) => {
         setSelectedIds(prev => {
@@ -220,19 +230,33 @@ export default function PackagingWorkflowPage() {
                 </div>
             </div>
 
-            {/* Select-all toolbar — shown only when there are orders */}
+            {/* Bulk actions toolbar — shown only when there are orders */}
             {filteredOrders.length > 0 && (
                 <div className="flex items-center justify-between gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300">
-                        <input
-                            type="checkbox"
-                            checked={allVisibleSelected}
-                            onChange={toggleSelectAll}
-                            className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
-                        />
-                        <span>{allVisibleSelected ? "Deselect all" : "Select all"}</span>
-                    </label>
+                    {/* Left: select-all + collapse-all */}
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-gray-700 dark:text-gray-300">
+                            <input
+                                type="checkbox"
+                                checked={allVisibleSelected}
+                                onChange={toggleSelectAll}
+                                className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
+                            />
+                            <span>{allVisibleSelected ? "Deselect all" : "Select all"}</span>
+                        </label>
 
+                        <div className="w-px h-4 bg-gray-300 dark:bg-gray-600" />
+
+                        <button
+                            onClick={toggleCollapseAll}
+                            className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors select-none"
+                        >
+                            <ChevronsUpDown className="w-4 h-4" />
+                            <span>{allCollapsed ? "Expand all" : "Collapse all"}</span>
+                        </button>
+                    </div>
+
+                    {/* Right: confirm selected */}
                     <div className={`transition-all duration-300 overflow-hidden ${selectedIds.size > 0 ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"}`}>
                         <button
                             onClick={() => setConfirmBulk(true)}
