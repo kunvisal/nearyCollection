@@ -40,19 +40,19 @@ async function InventoryContent() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="min-w-max">
                         <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
                             <TableRow>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Product
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Variant Attributes
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Current Stock
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Action
                                 </TableCell>
                             </TableRow>
@@ -63,13 +63,13 @@ async function InventoryContent() {
 
                                 return (
                                     <TableRow key={variant.id}>
-                                        <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90 font-medium">
+                                        <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90 font-medium whitespace-nowrap">
                                             {variant.product.nameKm}
                                         </TableCell>
-                                        <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                                        <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                             {attributesStr || "N/A"}
                                         </TableCell>
-                                        <TableCell className="py-3 text-center">
+                                        <TableCell className="py-3 text-center whitespace-nowrap">
                                             <Badge
                                                 color={variant.stockOnHand === 0 ? "error" : "warning"}
                                                 size="sm"
@@ -77,7 +77,7 @@ async function InventoryContent() {
                                                 {variant.stockOnHand} in stock
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="py-3 text-right">
+                                        <TableCell className="py-3 text-right whitespace-nowrap">
                                             <Link
                                                 href={`/admin/products/${variant.productId}#variants`}
                                                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
@@ -112,22 +112,22 @@ async function InventoryContent() {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <Table>
+                    <Table className="min-w-max">
                         <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
                             <TableRow>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Date
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Product Details
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Type
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-center text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Quantity Change
                                 </TableCell>
-                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400">
+                                <TableCell isHeader className="py-3 font-medium text-gray-500 text-end text-theme-xs dark:text-gray-400 whitespace-nowrap">
                                     Reason
                                 </TableCell>
                             </TableRow>
@@ -135,13 +135,13 @@ async function InventoryContent() {
                         <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {recentMoves.map((move) => (
                                 <TableRow key={move.id}>
-                                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                         {formatCambodiaDate(move.createdAt, "dd MMM yyyy, HH:mm")}
                                     </TableCell>
-                                    <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90 font-medium">
+                                    <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90 font-medium whitespace-nowrap">
                                         {move.variant.product.nameKm}
                                     </TableCell>
-                                    <TableCell className="py-3">
+                                    <TableCell className="py-3 whitespace-nowrap">
                                         <Badge
                                             color={move.type === "IN" ? "success" : move.type === "OUT" ? "error" : "primary"}
                                             size="sm"
@@ -149,10 +149,10 @@ async function InventoryContent() {
                                             {move.type}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="py-3 text-center text-theme-sm text-gray-800 dark:text-white/90 font-medium">
+                                    <TableCell className="py-3 text-center text-theme-sm text-gray-800 dark:text-white/90 font-medium whitespace-nowrap">
                                         {move.type === "OUT" || move.type === "DEDUCT" ? "-" : "+"}{move.qty}
                                     </TableCell>
-                                    <TableCell className="py-3 text-right text-theme-sm text-gray-500 dark:text-gray-400">
+                                    <TableCell className="py-3 text-right text-theme-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                         {move.note || "N/A"}
                                     </TableCell>
                                 </TableRow>
