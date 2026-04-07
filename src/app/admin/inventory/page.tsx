@@ -7,6 +7,7 @@ import Link from "next/link";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import { InventorySkeleton } from "@/components/skeletons/InventorySkeleton";
+import { PackagePlus } from "lucide-react";
 
 export const metadata: Metadata = {
     title: "Inventory Alerts | Neary Collection Admin",
@@ -80,9 +81,10 @@ async function InventoryContent() {
                                         <TableCell className="py-3 text-right whitespace-nowrap">
                                             <Link
                                                 href={`/admin/products/${variant.productId}#variants`}
-                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                                className="inline-flex items-center justify-center text-blue-600 hover:text-blue-800"
+                                                title="Update Stock"
                                             >
-                                                Update Stock
+                                                <PackagePlus size={20} />
                                             </Link>
                                         </TableCell>
                                     </TableRow>
