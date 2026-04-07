@@ -33,7 +33,7 @@ function SkeletonCard() {
                         {[70, 60, 50].map((w, i) => (
                             <div key={i} className="flex items-center justify-between gap-2">
                                 <SkeletonBox className="h-3.5 w-14 rounded" />
-                                <SkeletonBox className={`h-3.5 rounded`} style={{ width: `${w}%` }} />
+                                <SkeletonBox className="h-3.5 rounded" width={`${w}%`} />
                             </div>
                         ))}
                     </div>
@@ -44,7 +44,7 @@ function SkeletonCard() {
                         {[65, 80].map((w, i) => (
                             <div key={i} className="flex items-center justify-between gap-2">
                                 <SkeletonBox className="h-3.5 w-14 rounded" />
-                                <SkeletonBox className={`h-3.5 rounded`} style={{ width: `${w}%` }} />
+                                <SkeletonBox className="h-3.5 rounded" width={`${w}%`} />
                             </div>
                         ))}
                     </div>
