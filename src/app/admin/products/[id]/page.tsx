@@ -8,24 +8,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/context/ToastContext";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import imageCompression from 'browser-image-compression';
-
-type Variant = {
-    id: string;
-    sku: string;
-    color: string | null;
-    size: string | null;
-    costPrice: number | null;
-    salePrice: number;
-    stockOnHand: number;
-    isActive: boolean;
-};
-
-type ProductImage = {
-    id: string;
-    url: string;
-    sortOrder: number;
-    isPrimary: boolean;
-};
+import type { AdminVariantDetail, AdminProductImageDetail } from "@/types/admin";
 
 export default function ManageProductPage() {
     const params = useParams();
@@ -33,8 +16,8 @@ export default function ManageProductPage() {
     const productId = params.id as string;
 
     const [product, setProduct] = useState<any>(null);
-    const [variants, setVariants] = useState<Variant[]>([]);
-    const [images, setImages] = useState<ProductImage[]>([]);
+    const [variants, setVariants] = useState<AdminVariantDetail[]>([]);
+    const [images, setImages] = useState<AdminProductImageDetail[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // Variant Modal

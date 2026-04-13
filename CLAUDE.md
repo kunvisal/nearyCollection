@@ -273,7 +273,8 @@ Detailed documentation lives in `/docs/`:
 
 | File | Contents |
 |------|---------|
-| `docs/project-context.md` | Architecture philosophy and AI agent instructions |
+| `docs/ECOSYSTEM.md` | Canonical reference: all API shapes, Prisma fields, Zod schemas, enums, Server Actions |
+| `docs/claude-code-guide.md` | How the Claude Code setup works — workflows, file roles, real-use-case examples |
 | `docs/standards/coding-style.md` | Formatting, linting, naming conventions |
 | `docs/standards/project-structure.md` | Folder structure standards |
 | `docs/FEATURES_STATUS.md` | Which features are done vs. in-progress |
@@ -368,8 +369,9 @@ if (isLoading) return <NewFeatureSkeleton />;
 
 ## Suggested Improvements (Pending)
 
-These are known gaps that would improve AI assistance and code quality:
+All previously noted gaps have been resolved. See `TODO.md` for current backlog.
 
-1. **Create `src/types/`** — the coding style guide specifies shared interfaces go here, but the folder does not exist yet. Moving shared TypeScript interfaces there avoids duplication.
-2. **Add intent comments on complex transaction flows** — `orderRepository.ts` contains long transactional code. A short comment per transaction block explaining the business intent helps AI avoid misreading the logic.
-3. **Migrate `Skeleton.module.css`** — `src/components/ui/Skeleton.module.css` (used by shop components) still uses hardcoded hex colors. Migrate shop skeletons to use `.skeleton-box` and delete the old file.
+**Completed:**
+- `src/types/admin.ts` created — shared TypeScript interfaces live here
+- Intent comments added to all transaction blocks in `orderRepository.ts`
+- `Skeleton.module.css` deleted — shop skeletons now use `.skeleton-box`

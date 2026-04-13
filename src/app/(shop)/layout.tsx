@@ -2,6 +2,7 @@ import BottomNav from "@/components/Shop/BottomNav/BottomNav";
 import CartDrawer from "@/components/Shop/CartDrawer/CartDrawer";
 import AppHeader from "@/components/Shop/Header/AppHeader";
 import React from "react";
+import "@/styles/skeleton.css";
 
 export default function ShopLayout({
     children,

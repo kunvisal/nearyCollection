@@ -9,40 +9,7 @@ import { useToast } from "@/context/ToastContext";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import { MessengerImport } from "@/components/admin/pos/MessengerImport";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
-
-// Reusing types roughly matching the API response
-type Variant = {
-    id: string;
-    size: string;
-    color: string;
-    sku: string;
-    salePrice: number;
-    stockOnHand: number;
-    reservedQty: number;
-};
-
-type ProductImage = {
-    url: string;
-};
-
-type Product = {
-    id: string;
-    nameKm: string;
-    nameEn: string | null;
-    variants: Variant[];
-    images: ProductImage[];
-    category?: { id: number; nameKm: string };
-};
-
-type CartItem = {
-    variantId: string;
-    productId: string;
-    nameKm: string;
-    size: string;
-    color: string;
-    salePrice: number;
-    qty: number;
-};
+import type { AdminVariant, AdminProductImage, AdminProduct, CartItem } from "@/types/admin";
 
 const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
     JALAT: "Jalat (ចល័ត)",
@@ -51,8 +18,8 @@ const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
 };
 
 export default function POSPage() {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<AdminProduct[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<AdminProduct[]>([]);
     const [categories, setCategories] = useState<{ id: number, nameKm: string }[]>([]);
     const [activeCategoryId, setActiveCategoryId] = useState<number | 'ALL'>('ALL');
     const [searchQuery, setSearchQuery] = useState("");

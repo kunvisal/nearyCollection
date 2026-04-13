@@ -22,6 +22,9 @@ export class OrderRepository {
             isPOS?: boolean;
         }
     ) {
+        // Business intent: Atomically place a new order.
+        // Sequence: find/create customer → validate stock → generate order code → create order + items → deduct stock.
+        // If any step fails the entire transaction rolls back — no partial orders, no phantom stock deductions.
         return prisma.$transaction(async (tx) => {
             // 1. Find or create customer (match both phone and name to avoid overwriting past orders)
             let customer = await tx.customer.findFirst({
@@ -94,6 +97,11 @@ export class OrderRepository {
             let paymentStatus: PaymentStatus = 'UNPAID';
 
             if (orderData.isPOS) {
+                // POS business rules (enforced at point of sale by staff):
+                // - PP zone: COD + JALAT only. Phnom Penh orders use cash-on-delivery via the Jalat courier.
+                // - Province zone: ABA or WING (pre-payment required) + VET or JT couriers.
+                // - POS orders skip NEW status and go straight to PROCESSING (staff confirmed at counter).
+                // - Province POS orders are also marked PAID immediately (payment collected before shipping).
                 if (!orderData.deliveryService) {
                     throw new Error("Delivery service is required for POS orders.");
                 }
@@ -199,6 +207,10 @@ export class OrderRepository {
             discount?: number;
         }
     ) {
+        // Business intent: Replace an existing order's items while preserving the order record and code.
+        // Pattern: restore old stock → delete old items → validate + write new items → deduct new stock.
+        // The restore-then-reapply pattern guarantees stock accuracy on every edit.
+        // CANCELLED orders skip restore/deduct — stock was already returned when the order was cancelled.
         return prisma.$transaction(async (tx) => {
             const existingOrder = await tx.order.findUnique({
                 where: { id: orderId },
@@ -452,6 +464,9 @@ export class OrderRepository {
     }
 
     static async updateOrderStatus(id: string, status: OrderStatus) {
+        // Business intent: Status changes are usually a simple update, except CANCELLED.
+        // Cancelling an order automatically restores all item stock to inventory in the same transaction.
+        // The guard (not already CANCELLED) prevents double-restore if cancelled twice.
         return prisma.$transaction(async (tx) => {
             const order = await tx.order.findUnique({
                 where: { id },

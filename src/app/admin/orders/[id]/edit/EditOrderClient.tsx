@@ -10,40 +10,7 @@ import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
-
-// Reusing types roughly matching the API response
-type Variant = {
-    id: string;
-    size: string;
-    color: string;
-    sku: string;
-    salePrice: number;
-    stockOnHand: number;
-    reservedQty: number;
-};
-
-type ProductImage = {
-    url: string;
-};
-
-type Product = {
-    id: string;
-    nameKm: string;
-    nameEn: string | null;
-    variants: Variant[];
-    images: ProductImage[];
-    category?: { id: number; nameKm: string };
-};
-
-type CartItem = {
-    variantId: string;
-    productId: string;
-    nameKm: string;
-    size: string;
-    color: string;
-    salePrice: number;
-    qty: number;
-};
+import type { AdminVariant, AdminProductImage, AdminProduct, CartItem } from "@/types/admin";
 
 const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
     JALAT: "Jalat (ចល័ត)",
@@ -53,8 +20,8 @@ const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
 
 export default function EditOrderClient({ order }: { order: any }) {
     const router = useRouter();
-    const [products, setProducts] = useState<Product[]>([]);
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+    const [products, setProducts] = useState<AdminProduct[]>([]);
+    const [filteredProducts, setFilteredProducts] = useState<AdminProduct[]>([]);
     const [categories, setCategories] = useState<{ id: number, nameKm: string }[]>([]);
     const [activeCategoryId, setActiveCategoryId] = useState<number | 'ALL'>('ALL');
     const [searchQuery, setSearchQuery] = useState("");
