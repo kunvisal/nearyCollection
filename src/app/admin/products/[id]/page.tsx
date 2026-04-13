@@ -10,6 +10,8 @@ import { formatCambodiaDate } from "@/lib/utils/timezone";
 import imageCompression from 'browser-image-compression';
 import type { AdminVariantDetail, AdminProductImageDetail } from "@/types/admin";
 
+type Variant = AdminVariantDetail;
+
 export default function ManageProductPage() {
     const params = useParams();
     const router = useRouter();
