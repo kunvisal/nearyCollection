@@ -51,7 +51,7 @@ export default function EditOrderClient({ order }: { order: any }) {
     const [receiptData, setReceiptData] = useState<any>(null);
 
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<AdminProduct | null>(null);
 
     const [isPending, startTransition] = useTransition();
     const { addToast } = useToast();
@@ -124,12 +124,12 @@ export default function EditOrderClient({ order }: { order: any }) {
         }
     };
 
-    const handleProductClick = (product: Product) => {
+    const handleProductClick = (product: AdminProduct) => {
         setSelectedProduct(product);
         setIsProductModalOpen(true);
     };
 
-    const addToCart = (variant: Variant, product: Product) => {
+    const addToCart = (variant: AdminVariant, product: AdminProduct) => {
         setCart(prev => {
             const existingIndex = prev.findIndex(item => item.variantId === variant.id);
             if (existingIndex >= 0) {
