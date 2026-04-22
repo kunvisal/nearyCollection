@@ -302,6 +302,7 @@ export default function EditOrderClient({ order }: { order: any }) {
             if (res.success && res.order) {
                 // Show receipt instead of clearing immediately
                 const newReceiptData = {
+                    orderId: res.order.id,
                     orderCode: res.order.orderCode,
                     date: formatCambodiaDate(new Date(), "dd/MM/yyyy, HH:mm"),
                     customerName: formData.customerName,
@@ -351,8 +352,8 @@ export default function EditOrderClient({ order }: { order: any }) {
 
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden relative w-full bg-white dark:bg-gray-950 shadow-sm rounded-2xl border border-gray-100 dark:border-gray-800 -mt-2 print:h-auto print:border-none print:shadow-none print:overflow-visible">
-            <div className={`w-full h-full flex flex-col relative ${receiptData ? 'print:hidden' : ''}`}>
+        <div className="flex flex-col h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] overflow-hidden relative w-full bg-white dark:bg-gray-950 shadow-sm rounded-2xl border border-gray-100 dark:border-gray-800 -mt-2">
+            <div className="w-full h-full flex flex-col relative">
 
                 {/* Fixed App Header & Categories */}
                 <div className="pt-4 pb-0 px-4 bg-white dark:bg-gray-900 shadow-sm z-10 shrink-0">
@@ -595,10 +596,10 @@ export default function EditOrderClient({ order }: { order: any }) {
             </div>
             {/* Successful Order Receipt Modal (Moved outside the relative wrapper) */}
             {receiptData && (
-                <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4 print:static print:inset-auto print:flex-none print:block">
-                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm print:hidden"></div>
-                    <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md flex flex-col relative animate-in zoom-in-95 duration-300 ease-out shadow-2xl overflow-hidden print:w-full print:max-w-none print:shadow-none print:rounded-none">
-                        <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 print:hidden">
+                <div className="fixed inset-0 z-[999999] flex flex-col justify-end sm:justify-center sm:items-center sm:p-4">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+                    <div className="bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md flex flex-col relative animate-in zoom-in-95 duration-300 ease-out shadow-2xl overflow-hidden">
+                        <div className="px-4 py-3 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800">
                             <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center shrink-0">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                             </div>
@@ -609,11 +610,6 @@ export default function EditOrderClient({ order }: { order: any }) {
                         </div>
 
                         <div id="receipt-content" className="p-6 overflow-y-auto max-h-[50vh] bg-white text-gray-900">
-                            <div className="text-center mb-6 hidden print:block">
-                                <h2 className="text-2xl font-black">Neary Collection</h2>
-                                <p className="text-sm text-gray-500">Order #{receiptData.orderCode}</p>
-                            </div>
-
                             <div className="text-sm space-y-3 mb-6">
                                 <div className="flex justify-between"><span>Date:</span> <span>{receiptData.date}</span></div>
                                 <div className="flex justify-between"><span>Customer:</span> <span className="font-bold">{receiptData.customerName}</span></div>
@@ -645,7 +641,7 @@ export default function EditOrderClient({ order }: { order: any }) {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800 space-y-3 print:hidden shrink-0">
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800 space-y-3 shrink-0">
 
                             {messengerRecipientId && (
                                 <div className="space-y-2">
@@ -715,7 +711,7 @@ export default function EditOrderClient({ order }: { order: any }) {
                             )}
 
                             <div className="flex gap-3">
-                                <button onClick={() => window.print()} className="flex-1 py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
+                                <button onClick={() => window.open(`/print/order/${receiptData.orderId}`, '_blank')} className="flex-1 py-3 px-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-600 transition">
                                     Print
                                 </button>
                                 <button onClick={handleNewOrder} className="flex-1 py-3 px-4 bg-[#e21b70] text-white rounded-xl font-bold hover:bg-[#c2145e] transition">
