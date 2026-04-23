@@ -75,20 +75,20 @@
     align-items: center;
     justify-content: space-between;
     gap: 2mm;
-    padding-bottom: 1.3mm;
+    padding-bottom: 0.8mm;
     border-bottom: 0.35mm solid #000;
 }
 
 .receipt-label .rl-brand {
     display: flex;
     align-items: center;
-    gap: 1.5mm;
+    gap: 1.2mm;
     flex: 1;
     min-width: 0;
 }
 
 .receipt-label .rl-logo {
-    height: 8mm;
+    height: 6.2mm;
     width: auto;
     object-fit: contain;
 }
@@ -99,7 +99,7 @@
 }
 
 .receipt-label .rl-order-code {
-    font-size: 8pt;
+    font-size: 7pt;
     font-weight: 800;
     letter-spacing: 0.03em;
     line-height: 1.15;
@@ -107,10 +107,10 @@
 }
 
 .receipt-label .rl-order-date {
-    font-size: 6.3pt;
+    font-size: 5.6pt;
     font-weight: 500;
     color: #555;
-    margin-top: 0.4mm;
+    margin-top: 0.3mm;
     letter-spacing: 0.04em;
     white-space: nowrap;
 }
