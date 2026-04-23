@@ -2,14 +2,9 @@ import React from "react";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import type { ShopInfo } from "@/lib/constants/shop";
 
-const KHMER_MONTHS = [
-    "មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា",
-    "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ",
-];
-
 const DELIVERY_SERVICE_KM: Record<string, string> = {
     JALAT: "ចល័ត",
-    VET: "វីរប៊ុនថាំ",
+    VET: "វីរៈប៉ុស្តិ៍",
     JT: "J&T",
 };
 
@@ -18,10 +13,10 @@ const DELIVERY_ZONE_KM: Record<string, string> = {
     PROVINCE: "ខេត្ត",
 };
 
-const PAYMENT_METHOD_KM: Record<string, string> = {
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
     COD: "COD",
     ABA: "ABA",
-    WING: "Wing",
+    WING: "WING",
 };
 
 const PAYMENT_STATUS_KM: Record<string, string> = {
@@ -30,13 +25,6 @@ const PAYMENT_STATUS_KM: Record<string, string> = {
     PAID: "បានបង់",
     REJECTED: "បដិសេធ",
 };
-
-function formatKhmerDate(date: Date | string): string {
-    const day = formatCambodiaDate(date, "d");
-    const monthIdx = Number(formatCambodiaDate(date, "M")) - 1;
-    const time = formatCambodiaDate(date, "HH:mm");
-    return `${day} ${KHMER_MONTHS[monthIdx]} · ${time}`;
-}
 
 type ReceiptOrder = {
     id: string;
@@ -79,6 +67,10 @@ function getAddress(shippingAddress: unknown): string {
     return "—";
 }
 
+function formatHeaderDate(date: Date | string): string {
+    return formatCambodiaDate(date, "dd MMM yyyy · HH:mm").toUpperCase();
+}
+
 export default function ReceiptLabel({
     order,
     shop,
@@ -91,116 +83,130 @@ export default function ReceiptLabel({
         ? DELIVERY_SERVICE_KM[order.deliveryService] || order.deliveryService
         : "—";
     const zoneKm = DELIVERY_ZONE_KM[order.deliveryZone] || order.deliveryZone;
-    const paymentMethodKm = PAYMENT_METHOD_KM[order.paymentMethod] || order.paymentMethod;
+    const paymentMethod = PAYMENT_METHOD_LABEL[order.paymentMethod] || order.paymentMethod;
     const paymentStatusKm = PAYMENT_STATUS_KM[order.paymentStatus] || order.paymentStatus;
     const discount = num(order.discount);
+    const totalQty = order.items.reduce((sum, it) => sum + it.qty, 0);
 
     return (
         <div className="receipt-label">
-            {/* Header: logo · order code · date */}
-            <div className="rl-row">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={shop.logoPath} alt="" className="rl-logo" />
-                <div style={{ textAlign: "right" }}>
+            {/* ── Header: logo + order code / date ───────────── */}
+            <div className="rl-header">
+                <div className="rl-brand">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={shop.logoPath} alt="" className="rl-logo" />
+                </div>
+                <div className="rl-brand-meta">
                     <div className="rl-order-code">#{order.orderCode}</div>
-                    <div className="rl-date">{formatKhmerDate(order.createdAt)}</div>
+                    <div className="rl-order-date">{formatHeaderDate(order.createdAt)}</div>
                 </div>
             </div>
 
-            <div className="rl-divider" />
-
-            {/* FROM | TO  — two columns side by side */}
-            <div className="rl-col-2">
-                <div className="rl-from">
-                    <div className="rl-section-label">អ្នកផ្ញើ</div>
-                    <div style={{ fontWeight: 700 }}>{shop.nameKm}</div>
-                    <div>☎ {shop.phone}</div>
-                    <div>{shop.address}</div>
+            {/* ── FROM / TO ──────────────────────────────────── */}
+            <div className="rl-parties">
+                <div className="rl-party">
+                    <div className="rl-party-label">
+                        <span className="rl-diamond">◆</span> អ្នកផ្ញើ <span className="rl-sep">·</span> FROM
+                    </div>
+                    <div className="rl-party-name">{shop.nameEn}</div>
+                    <div className="rl-party-line">{shop.phone}</div>
+                    <div className="rl-party-line">{shop.address}</div>
                 </div>
-                <div>
-                    <div className="rl-section-label">អ្នកទទួល</div>
-                    <div className="rl-to-name">{order.customer.fullName}</div>
-                    <div className="rl-to-phone">☎ {order.customer.phone}</div>
-                </div>
-            </div>
-
-            {/* Address full-width under receiver (stays readable) */}
-            <div className="rl-to-address" style={{ marginTop: "0.8mm" }}>
-                📍 {address}
-            </div>
-
-            <div className="rl-divider-double" />
-
-            {/* Delivery | Payment — two columns */}
-            <div className="rl-col-2 rl-meta">
-                <div>
-                    <span className="rl-section-label">ដឹកជញ្ជូន៖ </span>
-                    {deliveryServiceKm} · {zoneKm}
-                </div>
-                <div>
-                    <span className="rl-section-label">ទូទាត់៖ </span>
-                    {paymentMethodKm} · {paymentStatusKm}
+                <div className="rl-party rl-party--to">
+                    <div className="rl-party-label">
+                        <span className="rl-diamond">◆</span> អ្នកទទួល <span className="rl-sep">·</span> TO
+                    </div>
+                    <div className="rl-party-name">{order.customer.fullName}</div>
+                    <div className="rl-party-line">{order.customer.phone}</div>
+                    <div className="rl-party-line rl-party-address">{address}</div>
                 </div>
             </div>
 
-            <div className="rl-divider" />
+            {/* ── Courier / Route / Payment ──────────────────── */}
+            <div className="rl-meta3">
+                <div className="rl-meta3-cell">
+                    <div className="rl-meta3-label">COURIER</div>
+                    <div className="rl-meta3-value">{deliveryServiceKm}</div>
+                </div>
+                <div className="rl-meta3-cell">
+                    <div className="rl-meta3-label">ROUTE</div>
+                    <div className="rl-meta3-value">{zoneKm}</div>
+                </div>
+                <div className="rl-meta3-cell">
+                    <div className="rl-meta3-label">PAYMENT</div>
+                    <div className="rl-meta3-value">
+                        <span className="rl-pill">{paymentMethod}</span>
+                        <span className="rl-pill-after">{paymentStatusKm}</span>
+                    </div>
+                </div>
+            </div>
 
-            {/* Items */}
-            <div>
-                <div className="rl-section-label" style={{ marginBottom: "0.5mm" }}>បញ្ជីទំនិញ</div>
+            {/* ── Items table header ─────────────────────────── */}
+            <div className="rl-items-head">
+                <div className="rl-items-head-title">បញ្ជីទំនិញ <span className="rl-sep">·</span> ITEMS</div>
+                <div className="rl-items-head-qty">QTY</div>
+                <div className="rl-items-head-amt">AMOUNT</div>
+            </div>
+
+            {/* ── Items list ─────────────────────────────────── */}
+            <div className="rl-items">
                 {order.items.map((item) => {
-                    const variantParts = [item.colorSnapshot, item.sizeSnapshot].filter(Boolean).join(" / ");
+                    const details = [item.sizeSnapshot && `Size ${item.sizeSnapshot}`, item.colorSnapshot]
+                        .filter(Boolean)
+                        .join(" · ");
                     return (
-                        <div key={item.id} className="rl-item rl-row" style={{ alignItems: "flex-start" }}>
-                            <span className="rl-checkbox" />
-                            <div style={{ flex: 1, minWidth: 0 }}>
+                        <div key={item.id} className="rl-item">
+                            <div className="rl-item-info">
                                 <div className="rl-item-name">{item.productNameSnapshot}</div>
-                                <div className="rl-item-meta">
-                                    {variantParts || "—"}  ·  × {item.qty}
-                                </div>
+                                {details && <div className="rl-item-details">{details}</div>}
                             </div>
-                            <div className="rl-item-meta" style={{ fontWeight: 700, whiteSpace: "nowrap" }}>
-                                ${num(item.lineTotal).toFixed(2)}
-                            </div>
+                            <div className="rl-item-qty">×{item.qty}</div>
+                            <div className="rl-item-amt">${num(item.lineTotal).toFixed(2)}</div>
                         </div>
                     );
                 })}
             </div>
 
-            {order.note && (
-                <div className="rl-note">
-                    <strong>កំណត់សម្គាល់៖ </strong>{order.note}
+            {/* ── Note + item count ──────────────────────────── */}
+            <div className="rl-note-row">
+                <div className="rl-note-text">
+                    {order.note
+                        ? <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ {order.note}</>
+                        : <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ ផាក់វេចខ្ចប់ក្នុងសម្ភារ៉ៃទន់</>}
                 </div>
-            )}
+                <div className="rl-note-count">{totalQty} items total</div>
+            </div>
 
-            <div className="rl-divider" />
-
-            {/* Totals — subtotal/discount/delivery in a compact 2-col grid, grand total on its own row */}
+            {/* ── Subtotal / Delivery ────────────────────────── */}
             <div className="rl-totals">
-                <div className="rl-col-2">
-                    <div className="rl-row">
-                        <span>សរុបរង</span>
-                        <span>${num(order.subtotal).toFixed(2)}</span>
-                    </div>
-                    <div className="rl-row">
-                        <span>ដឹកជញ្ជូន</span>
-                        <span>
-                            {order.isFreeDelivery
-                                ? <span style={{ fontWeight: 700 }}>ឥតគិតថ្លៃ</span>
-                                : `$${num(order.deliveryFee).toFixed(2)}`}
-                        </span>
-                    </div>
+                <div className="rl-total-row">
+                    <span className="rl-total-label">សរុបរង <span className="rl-sep">·</span> Subtotal</span>
+                    <span className="rl-total-value">${num(order.subtotal).toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
-                    <div className="rl-row">
-                        <span>បញ្ចុះតម្លៃ</span>
-                        <span>-${discount.toFixed(2)}</span>
+                    <div className="rl-total-row">
+                        <span className="rl-total-label">បញ្ចុះតម្លៃ <span className="rl-sep">·</span> Discount</span>
+                        <span className="rl-total-value">-${discount.toFixed(2)}</span>
                     </div>
                 )}
-                <div className="rl-row rl-grand-total" style={{ marginTop: "0.8mm", borderTop: "0.35mm solid #000", paddingTop: "0.8mm" }}>
-                    <span>សរុប</span>
-                    <span>${num(order.total).toFixed(2)}</span>
+                <div className="rl-total-row">
+                    <span className="rl-total-label">ដឹកជញ្ជូន <span className="rl-sep">·</span> Delivery</span>
+                    <span className="rl-total-value">
+                        {order.isFreeDelivery ? "ឥតគិតថ្លៃ" : `$${num(order.deliveryFee).toFixed(2)}`}
+                    </span>
                 </div>
+            </div>
+
+            {/* ── Grand total bar ────────────────────────────── */}
+            <div className="rl-grand">
+                <span className="rl-grand-label">សរុប</span>
+                <span className="rl-grand-value">${num(order.total).toFixed(2)}</span>
+            </div>
+
+            {/* ── Footer ─────────────────────────────────────── */}
+            <div className="rl-footer">
+                <span>សូមអរគុណ 🙏</span>
+                <span>NEARY.CO · @NEARYCOLLECTION</span>
             </div>
         </div>
     );
