@@ -110,7 +110,6 @@ export default function ReceiptLabel({
                     </div>
                     <div className="rl-party-name">{shop.nameEn}</div>
                     <div className="rl-party-line">{shop.phone}</div>
-                    <div className="rl-party-line">{shop.address}</div>
                 </div>
                 <div className="rl-party rl-party--to">
                     <div className="rl-party-label">
@@ -118,8 +117,13 @@ export default function ReceiptLabel({
                     </div>
                     <div className="rl-party-name">{order.customer.fullName}</div>
                     <div className="rl-party-line">{order.customer.phone}</div>
-                    <div className="rl-party-line rl-party-address">{address}</div>
                 </div>
+            </div>
+
+            {/* ── Receiver address (full width) ──────────────── */}
+            <div className="rl-address-row">
+                <div className="rl-address-label">អាសយដ្ឋានទទួល <span className="rl-sep">·</span> SHIP TO</div>
+                <div className="rl-address-value">{address}</div>
             </div>
 
             {/* ── Courier / Route / Payment ──────────────────── */}
