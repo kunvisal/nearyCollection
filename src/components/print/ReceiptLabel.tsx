@@ -5,7 +5,7 @@ import type { ShopInfo } from "@/lib/constants/shop";
 const DELIVERY_SERVICE_KM: Record<string, string> = {
     JALAT: "ចល័ត",
     VET: "វិរៈប៊ុនថាំ",
-    JT: "J&T",
+    JT: "J&T Express",
 };
 
 const DELIVERY_ZONE_KM: Record<string, string> = {
@@ -20,9 +20,9 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 };
 
 const PAYMENT_STATUS_KM: Record<string, string> = {
-    UNPAID: "មិនទាន់បង់",
+    UNPAID: "មិនទាន់ទូទាត់",
     PENDING_VERIFICATION: "កំពុងផ្ទៀង",
-    PAID: "បានបង់",
+    PAID: "បានទូទាត់រួច)",
     REJECTED: "បដិសេធ",
 };
 
@@ -87,6 +87,24 @@ export default function ReceiptLabel({
     const paymentStatusKm = PAYMENT_STATUS_KM[order.paymentStatus] || order.paymentStatus;
     const discount = num(order.discount);
     const totalQty = order.items.reduce((sum, it) => sum + it.qty, 0);
+    const paidStatusKm = order.paymentStatus === "PAID" ? "បានទូទាត់រួច" : "មិនទាន់ទូទាត់";
+
+    const isPP = order.deliveryZone === "PP";
+    const termsTitle = isPP
+        ? "លក្ខខណ្ឌប្តូរទំនិញ (ភ្នំពេញ)"
+        : "លក្ខខណ្ឌប្តូរទំនិញ (តាមខេត្ត)";
+    const termsItems = isPP
+        ? [
+              "អតិថិជនអាចហែកមើលអីវ៉ាន់ ភ្លាមៗបានពេលកំពុងដឹកជញ្ជូន។",
+              "អតិថិជនអាចប្តូរម៉ូត និងទំហំបាន ក្នុងរយៈពេល ២ថ្ងៃ គិតពីថ្ងៃទទួលទំនិញ។",
+              "អីវ៉ាន់ប្តូរត្រូវមិនទាន់ពាក់ មិនទាន់បោក មិនមានក្លិន និងហាមផ្តាច់ស្លាក ពួកយើងនឹងមិនប្តូរជូនវិញនោះទេ។",
+
+          ]
+        : [
+              "អតិថិជនអាចថតវីដេអូពេលបើកកញ្ចប់ ដើម្បីជាភស្តុតាង ក្នុងករណីទំនិញខុសម៉ូតឬមានបញ្ហាពីខាងហាង។",
+              "អតិថិជនអាចប្តូរម៉ូត និងទំហំបាន ក្នុងរយៈពេល ២ថ្ងៃ គិតពីថ្ងៃទទួលទំនិញ។",
+              "អីវ៉ាន់ប្តូរត្រូវមិនទាន់ពាក់ មិនទាន់បោក មិនមានក្លិន និងហាមផ្តាច់ស្លាក ពួកយើងនឹងមិនប្តូរជូនវិញនោះទេ។",
+          ];
 
     return (
         <div className="receipt-label">
@@ -126,15 +144,12 @@ export default function ReceiptLabel({
             {/* ── Courier / Route / Payment ──────────────────── */}
             <div className="rl-meta3">
                 <div className="rl-meta3-cell">
-                    <div className="rl-meta3-label">COURIER</div>
                     <div className="rl-meta3-value">{deliveryServiceKm}</div>
                 </div>
                 <div className="rl-meta3-cell">
-                    <div className="rl-meta3-label">ROUTE</div>
                     <div className="rl-meta3-value">{zoneKm}</div>
                 </div>
                 <div className="rl-meta3-cell">
-                    <div className="rl-meta3-label">PAYMENT</div>
                     <div className="rl-meta3-value">
                         <span className="rl-pill">{paymentMethod}</span>
                         <span className="rl-pill-after">{paymentStatusKm}</span>
@@ -173,7 +188,7 @@ export default function ReceiptLabel({
                 <div className="rl-note-text">
                     {order.note
                         ? <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ {order.note}</>
-                        : <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ ផាក់វេចខ្ចប់ក្នុងសម្ភារ៉ៃទន់</>}
+                        : <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ </>}
                 </div>
                 <div className="rl-note-count">{totalQty} items total</div>
             </div>
@@ -201,13 +216,20 @@ export default function ReceiptLabel({
             {/* ── Grand total bar ────────────────────────────── */}
             <div className="rl-grand">
                 <span className="rl-grand-label">សរុប</span>
-                <span className="rl-grand-value">${num(order.total).toFixed(2)}</span>
+                <span className="rl-grand-value">
+                    ${num(order.total).toFixed(2)}
+                    <span className="rl-grand-status">({paidStatusKm})</span>
+                </span>
             </div>
 
-            {/* ── Footer ─────────────────────────────────────── */}
-            <div className="rl-footer">
-                <span>សូមអរគុណ</span>
-                <span>NEARY.CO · @NEARYCOLLECTION</span>
+            {/* ── Terms & conditions (footer) ────────────────── */}
+            <div className="rl-terms">
+                <div className="rl-terms-title">{termsTitle}</div>
+                <ul className="rl-terms-list">
+                    {termsItems.map((t, i) => (
+                        <li key={i} className="rl-terms-item">· {t}</li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
