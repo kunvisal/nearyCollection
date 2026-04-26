@@ -1,7 +1,7 @@
 export const SHOP_INFO = {
     nameEn: "Neary Collection",
-    nameKm: "នារី ខូលឡិចសិន",
-    phone: "+855 12 345 678",
+    nameKm: "Neary Collection",
+    phone: "097 833 8365",
     address: "ភ្នំពេញ កម្ពុជា",
     logoPath: "/images/logo/neary-logo.svg",
 } as const;

@@ -4,7 +4,7 @@ import type { ShopInfo } from "@/lib/constants/shop";
 
 const DELIVERY_SERVICE_KM: Record<string, string> = {
     JALAT: "ចល័ត",
-    VET: "វីរៈប៉ុស្តិ៍",
+    VET: "វិរៈប៊ុនថាំ",
     JT: "J&T",
 };
 
@@ -206,7 +206,7 @@ export default function ReceiptLabel({
 
             {/* ── Footer ─────────────────────────────────────── */}
             <div className="rl-footer">
-                <span>សូមអរគុណ 🙏</span>
+                <span>សូមអរគុណ</span>
                 <span>NEARY.CO · @NEARYCOLLECTION</span>
             </div>
         </div>
