@@ -29,19 +29,19 @@
 .receipt-label {
     width: 80mm;
     min-height: 100mm;
-    padding: 1mm 2.5mm;
+    padding: 0.8mm 2.5mm;
     box-sizing: border-box;
     font-family: "Inter", "Hanuman", "Khmer OS", sans-serif;
     color: #000;
     background: #fff;
     font-size: 7.4pt;
-    line-height: 1.25;
+    line-height: 1.2;
     page-break-after: always;
     break-after: page;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 1mm;
+    gap: 0.4mm;
 }
 
 .receipt-label :where(.rl-party-label, .rl-meta3-label, .rl-items-head-title,
@@ -75,7 +75,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 2mm;
-    padding-bottom: 0.8mm;
+    padding-bottom: 0.5mm;
     border-bottom: 0.35mm solid #000;
 }
 
@@ -120,15 +120,15 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2.5mm;
-    padding: 1.6mm 0 0.8mm;
+    padding: 0.8mm 0 0.4mm;
     position: relative;
 }
 
 .receipt-label .rl-parties::after {
     content: "";
     position: absolute;
-    top: 1.6mm;
-    bottom: 1.6mm;
+    top: 0.8mm;
+    bottom: 0.8mm;
     left: 50%;
     width: 0;
     border-left: 0.25mm solid #000;
@@ -150,7 +150,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #666;
-    margin-bottom: 0.8mm;
+    margin-bottom: 0.4mm;
 }
 
 .receipt-label .rl-diamond {
@@ -166,10 +166,10 @@
 }
 
 .receipt-label .rl-party-name {
-    font-size: 8.6pt;
+    font-size: 8.4pt;
     font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 0.5mm;
+    line-height: 1.15;
+    margin-bottom: 0.2mm;
     color: #000;
     word-break: break-word;
 }
@@ -185,7 +185,7 @@
 
 /* ── Full-width receiver address row ───────────── */
 .receipt-label .rl-address-row {
-    padding: 1mm 1.6mm;
+    padding: 0.7mm 1.6mm;
     background: #000;
     color: #fff;
     border-radius: 1mm;
@@ -197,7 +197,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: #bbb;
-    margin-bottom: 0.3mm;
+    margin-bottom: 0.1mm;
 }
 
 .receipt-label .rl-address-value {
@@ -212,7 +212,7 @@
 .receipt-label .rl-meta3 {
     display: grid;
     grid-template-columns: 1fr 1fr 1.15fr;
-    padding: 1.3mm 0;
+    padding: 0.8mm 0;
     border-bottom: 0.35mm solid #000;
 }
 
@@ -236,7 +236,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     color: #666;
-    margin-bottom: 0.4mm;
+    margin-bottom: 0.2mm;
 }
 
 .receipt-label .rl-meta3-value {
@@ -272,7 +272,7 @@
     display: grid;
     grid-template-columns: 1fr 8mm 12mm;
     align-items: center;
-    padding: 1mm 0 0.8mm;
+    padding: 0.6mm 0 0.4mm;
     border-bottom: 0.25mm solid #000;
 }
 
@@ -293,7 +293,7 @@
 }
 
 .receipt-label .rl-items {
-    padding: 0.5mm 0 0.8mm;
+    padding: 0.3mm 0 0.4mm;
     border-bottom: 0.35mm solid #000;
 }
 
@@ -301,7 +301,7 @@
     display: grid;
     grid-template-columns: 1fr 8mm 12mm;
     align-items: flex-start;
-    padding: 0.6mm 0;
+    padding: 0.35mm 0;
     gap: 0.5mm;
 }
 
@@ -316,15 +316,15 @@
 .receipt-label .rl-item-name {
     font-size: 7.6pt;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.15;
     word-break: break-word;
 }
 
 .receipt-label .rl-item-details {
     font-size: 6.3pt;
     color: #666;
-    line-height: 1.2;
-    margin-top: 0.2mm;
+    line-height: 1.15;
+    margin-top: 0.1mm;
 }
 
 .receipt-label .rl-item-qty {
@@ -350,7 +350,7 @@
     justify-content: space-between;
     align-items: center;
     gap: 2mm;
-    padding: 0.8mm 0;
+    padding: 0.5mm 0;
     border-bottom: 0.35mm solid #000;
 }
 
@@ -376,10 +376,10 @@
 
 /* ── Totals ─────────────────────────────────────── */
 .receipt-label .rl-totals {
-    padding: 0.8mm 0 1mm;
+    padding: 0.5mm 0 0.4mm;
     display: flex;
     flex-direction: column;
-    gap: 0.5mm;
+    gap: 0.2mm;
 }
 
 .receipt-label .rl-total-row {
@@ -407,20 +407,20 @@
     align-items: center;
     background: #000;
     color: #fff;
-    padding: 1mm 1.6mm;
+    padding: 0.7mm 1.6mm;
     border-radius: 0.8mm;
-    margin-top: 0.2mm;
+    margin-top: 0.1mm;
 }
 
 .receipt-label .rl-grand-label {
     font-family: "Hanuman", "Khmer OS", serif;
-    font-size: 7.8pt;
+    font-size: 7.6pt;
     font-weight: 700;
     letter-spacing: 0.05em;
 }
 
 .receipt-label .rl-grand-value {
-    font-size: 11.5pt;
+    font-size: 10.5pt;
     font-weight: 900;
     letter-spacing: 0.01em;
     line-height: 1;
@@ -435,6 +435,5 @@
     font-weight: 600;
     color: #555;
     letter-spacing: 0.04em;
-    margin-top: auto;
-    padding-top: 1mm;
+    padding-top: 0.5mm;
 }
