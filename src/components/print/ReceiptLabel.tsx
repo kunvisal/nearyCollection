@@ -102,28 +102,25 @@ export default function ReceiptLabel({
                 </div>
             </div>
 
-            {/* ── FROM / TO ──────────────────────────────────── */}
-            <div className="rl-parties">
-                <div className="rl-party">
-                    <div className="rl-party-label">
-                        <span className="rl-diamond">◆</span> អ្នកផ្ញើ <span className="rl-sep">·</span> FROM
+            {/* ── Unified shipping card (FROM / TO / SHIP TO) ─ */}
+            <div className="rl-ship-card">
+                <div className="rl-ship-card-top">
+                    <div className="rl-ship-col">
+                        <div className="rl-ship-label">អ្នកផ្ញើ <span className="rl-sep">·</span> From</div>
+                        <div className="rl-ship-name">{shop.nameEn}</div>
+                        <div className="rl-ship-phone">{shop.phone}</div>
                     </div>
-                    <div className="rl-party-name">{shop.nameEn}</div>
-                    <div className="rl-party-line">{shop.phone}</div>
-                </div>
-                <div className="rl-party rl-party--to">
-                    <div className="rl-party-label">
-                        <span className="rl-diamond">◆</span> អ្នកទទួល <span className="rl-sep">·</span> TO
+                    <div className="rl-ship-arrow" aria-hidden="true">→</div>
+                    <div className="rl-ship-col rl-ship-col--right">
+                        <div className="rl-ship-label">អ្នកទទួល <span className="rl-sep">·</span> To</div>
+                        <div className="rl-ship-name">{order.customer.fullName}</div>
+                        <div className="rl-ship-phone">{order.customer.phone}</div>
                     </div>
-                    <div className="rl-party-name">{order.customer.fullName}</div>
-                    <div className="rl-party-line">{order.customer.phone}</div>
                 </div>
-            </div>
-
-            {/* ── Receiver address (full width) ──────────────── */}
-            <div className="rl-address-row">
-                <div className="rl-address-label">អាសយដ្ឋានទទួល <span className="rl-sep">·</span> SHIP TO</div>
-                <div className="rl-address-value">{address}</div>
+                <div className="rl-ship-card-bottom">
+                    <div className="rl-ship-label">អាសយដ្ឋានទទួល <span className="rl-sep">·</span> Ship to</div>
+                    <div className="rl-ship-address">{address}</div>
+                </div>
             </div>
 
             {/* ── Courier / Route / Payment ──────────────────── */}

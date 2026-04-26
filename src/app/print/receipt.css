@@ -44,10 +44,10 @@
     gap: 0.4mm;
 }
 
-.receipt-label :where(.rl-party-label, .rl-meta3-label, .rl-items-head-title,
+.receipt-label :where(.rl-meta3-label, .rl-items-head-title,
     .rl-items-head-qty, .rl-items-head-amt, .rl-total-label, .rl-total-value,
     .rl-grand-value, .rl-order-code, .rl-order-date, .rl-footer, .rl-note-count,
-    .rl-item-qty, .rl-item-amt, .rl-pill) {
+    .rl-item-qty, .rl-item-amt, .rl-pill, .rl-ship-label, .rl-ship-arrow) {
     font-family: "Inter", "Hanuman", "Khmer OS", sans-serif;
 }
 
@@ -75,8 +75,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 2mm;
-    padding-bottom: 0.5mm;
-    border-bottom: 0.35mm solid #000;
+    padding-bottom: 0.3mm;
 }
 
 .receipt-label .rl-brand {
@@ -115,57 +114,74 @@
     white-space: nowrap;
 }
 
-/* ── FROM / TO ──────────────────────────────────── */
-.receipt-label .rl-parties {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5mm;
-    padding: 0.8mm 0 0.4mm;
-    position: relative;
-}
-
-.receipt-label .rl-parties::after {
-    content: "";
-    position: absolute;
-    top: 0.8mm;
-    bottom: 0.8mm;
-    left: 50%;
-    width: 0;
-    border-left: 0.25mm solid #000;
-}
-
-.receipt-label .rl-party {
-    min-width: 0;
-    padding-right: 1mm;
-}
-
-.receipt-label .rl-party--to {
-    padding-right: 0;
-    padding-left: 1.5mm;
-}
-
-.receipt-label .rl-party-label {
-    font-size: 5.8pt;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #666;
-    margin-bottom: 0.4mm;
-}
-
-.receipt-label .rl-diamond {
-    font-size: 5pt;
-    color: #000;
-    vertical-align: 0.1mm;
-}
-
 .receipt-label .rl-sep {
-    color: #bbb;
+    color: #555;
     font-weight: 400;
     margin: 0 0.4mm;
 }
 
-.receipt-label .rl-party-name {
+/* ── Unified shipping card (FROM / TO / SHIP TO) ── */
+.receipt-label .rl-ship-card {
+    border: 0.35mm solid #000;
+    border-radius: 1.2mm;
+}
+
+.receipt-label .rl-ship-card-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 1mm 1.6mm;
+    position: relative;
+    border-bottom: 0.35mm solid #000;
+}
+
+.receipt-label .rl-ship-card-top::before {
+    content: "";
+    position: absolute;
+    top: 1.4mm;
+    bottom: 1.4mm;
+    left: 50%;
+    border-left: 0.25mm dashed #000;
+}
+
+.receipt-label .rl-ship-arrow {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 4mm;
+    height: 4mm;
+    border: 0.3mm solid #000;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6.4pt;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+}
+
+.receipt-label .rl-ship-col {
+    min-width: 0;
+    padding-right: 2.6mm;
+}
+
+.receipt-label .rl-ship-col--right {
+    padding-right: 0;
+    padding-left: 3.8mm;
+}
+
+.receipt-label .rl-ship-label {
+    font-size: 5.4pt;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #000;
+    margin-bottom: 0.4mm;
+}
+
+.receipt-label .rl-ship-name {
     font-size: 8.4pt;
     font-weight: 800;
     line-height: 1.15;
@@ -174,37 +190,24 @@
     word-break: break-word;
 }
 
-.receipt-label .rl-party-line {
-    font-size: 7.4pt;
-    font-weight: 600;
-    line-height: 1.25;
+.receipt-label .rl-ship-phone {
+    font-size: 8pt;
+    font-weight: 500;
+    line-height: 1.2;
     color: #000;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     word-break: break-word;
 }
 
-/* ── Full-width receiver address row ───────────── */
-.receipt-label .rl-address-row {
-    padding: 0.7mm 1.6mm;
-    background: #000;
-    color: #fff;
-    border-radius: 1mm;
+.receipt-label .rl-ship-card-bottom {
+    padding: 0.8mm 1.6mm;
 }
 
-.receipt-label .rl-address-label {
-    font-size: 5.4pt;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #bbb;
-    margin-bottom: 0.1mm;
-}
-
-.receipt-label .rl-address-value {
+.receipt-label .rl-ship-address {
     font-size: 7.8pt;
     font-weight: 700;
-    line-height: 1.25;
-    color: #fff;
+    line-height: 1.2;
+    color: #000;
     word-break: break-word;
 }
 
