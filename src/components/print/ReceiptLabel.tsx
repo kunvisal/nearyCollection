@@ -136,8 +136,7 @@ export default function ReceiptLabel({
                     </div>
                 </div>
                 <div className="rl-ship-card-bottom">
-                    <div className="rl-ship-label">អាសយដ្ឋានទទួល <span className="rl-sep">·</span> Ship to</div>
-                    <div className="rl-ship-address">{address}</div>
+                    <div className="rl-ship-address">ទីតាំង : {address}</div>
                 </div>
             </div>
 
