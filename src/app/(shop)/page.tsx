@@ -10,20 +10,31 @@ export default async function ShopHome() {
     const dbProducts = await ProductService.getActiveProducts();
     const dbCategories = await CategoryService.getActiveCategories();
 
-    // Map DB products to the format expected by ProductRow
+    // Map DB products to the format expected by ProductRow.
+    // For bundles, derive the unit price from components: Σ(component.salePrice × qty) − bundleDiscount.
     const mappedProducts = dbProducts.map((p: any) => {
-        // Find the lowest price among variants or default to 0
-        const price = p.variants?.length > 0
-            ? Math.min(...p.variants.map((v: any) => Number(v.salePrice)))
-            : 0;
+        let price = 0;
+        if (p.isBundle) {
+            const sum = (p.bundleComponents || []).reduce(
+                (acc: number, c: any) => acc + Number(c.variant.salePrice) * c.qty,
+                0,
+            );
+            const discount = p.bundleDiscount != null ? Number(p.bundleDiscount) : 0;
+            price = Math.max(0, sum - discount);
+        } else {
+            price = p.variants?.length > 0
+                ? Math.min(...p.variants.map((v: any) => Number(v.salePrice)))
+                : 0;
+        }
 
         return {
             id: p.id,
             name: p.nameKm,
             price: price,
             image: p.images?.[0]?.url || "/images/placeholder-product.svg",
-            isNew: true, // For now, treat all as new. We can add logic to check created_at later.
-            isBestSeller: false // Needs order analytics to determine best sellers
+            isBundle: !!p.isBundle,
+            isNew: true,
+            isBestSeller: false,
         };
     });
 

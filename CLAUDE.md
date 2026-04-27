@@ -159,10 +159,39 @@ Use the helper in `src/lib/utils/apiResponse.ts`.
 
 - Use **Prisma only** — never write raw SQL unless absolutely necessary
 - Always run `prisma generate` after schema changes
-- Always create a named migration: `prisma migrate dev --name "what_changed"`
 - Never modify existing migration files
 - Add indexes for: product name, categoryId, customerId, createdAt
 - Design schema to support future microservices split (avoid tight cross-domain coupling)
+
+### Prisma migration workflow (Supabase)
+
+The runtime `DATABASE_URL` points to the Supabase **pooler** (port `6543` / pgBouncer) which does **NOT** support `prisma migrate dev` — that command will hang. Migrations are written by hand and applied manually. Follow these steps for every schema change:
+
+1. **Edit `prisma/schema.prisma`** with the new fields/models.
+2. **Regenerate the client** so TypeScript types are available immediately:
+
+   ```bash
+   npx prisma generate
+   ```
+
+3. **Create a migration folder by hand** (do NOT run `prisma migrate dev`):
+
+   ```text
+   prisma/migrations/<YYYYMMDDhhmmss>_<short_description>/migration.sql
+   ```
+
+   Use a Cambodia-time timestamp prefix that is greater than the latest existing migration folder so ordering stays correct.
+4. **Write the SQL defensively**, mirroring [20260224100000_add_delivery_service/migration.sql](prisma/migrations/20260224100000_add_delivery_service/migration.sql):
+   - `ALTER TABLE ... ADD COLUMN IF NOT EXISTS ...`
+   - `CREATE TABLE IF NOT EXISTS ...`
+   - Wrap `ADD CONSTRAINT` and enum creation in `DO $$ ... EXCEPTION WHEN duplicate_object THEN NULL; END $$;` blocks.
+   - `CREATE INDEX IF NOT EXISTS ...`
+   This keeps the migration idempotent so it can be re-run safely on environments where parts already exist.
+5. **Apply the migration in production** via one of:
+   - Open Supabase → SQL Editor → paste the contents of `migration.sql` → Run, **then** insert a row into `_prisma_migrations` so Prisma marks it applied (use `INSERT INTO _prisma_migrations(id, checksum, finished_at, migration_name, logs, rolled_back_at, started_at, applied_steps_count) VALUES (...);` matching the folder name).
+   - OR set a `DIRECT_URL` env var pointing to Supabase port `5432` and run `npx prisma migrate deploy`. `migrate deploy` only applies pending migrations and does not require an interactive shadow database.
+6. **Never** run `prisma migrate reset`, `prisma db push`, or `prisma migrate dev` against the production pooler — those either hang or wipe data.
+7. **Code can use the new fields immediately** after step 2; the actual SQL apply (step 5) is a deploy-time concern that does not block local development against types.
 
 **Key enums:**
 

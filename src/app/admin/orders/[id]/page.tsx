@@ -146,36 +146,73 @@ export default function OrderDetailPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {order.items.map((item: any) => (
-                                        <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                                                        {item.variant?.product?.images?.[0] ? (
-                                                            <img src={item.variant.product.images[0].url} alt="Product" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <Package className="w-6 h-6 m-3 text-gray-400" />
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-medium text-gray-900 dark:text-white">{item.productNameSnapshot}</div>
-                                                        <div className="text-xs text-gray-500 mt-0.5">
-                                                            {item.colorSnapshot && `Color: ${item.colorSnapshot}`}
-                                                            {item.colorSnapshot && item.sizeSnapshot && ' | '}
-                                                            {item.sizeSnapshot && `Size: ${item.sizeSnapshot}`}
-                                                            <br />
-                                                            <span className="text-gray-400">SKU: {item.skuSnapshot}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-3 text-center">{item.qty}</td>
-                                            <td className="px-4 py-3 text-right">${Number(item.salePriceSnapshot).toFixed(2)}</td>
-                                            <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
-                                                ${Number(item.lineTotal).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {(() => {
+                                        const allItems = order.items as Array<any>;
+                                        const topLevel = allItems.filter((it) => !it.parentItemId);
+                                        const childrenByParent = allItems.reduce<Record<string, any[]>>((acc, it) => {
+                                            if (it.parentItemId) (acc[it.parentItemId] ||= []).push(it);
+                                            return acc;
+                                        }, {});
+                                        return topLevel.map((item: any) => {
+                                            const children = item.isBundleParent ? childrenByParent[item.id] || [] : [];
+                                            const imgUrl =
+                                                item.variant?.product?.images?.[0]?.url ||
+                                                item.bundleProduct?.images?.[0]?.url;
+                                            return (
+                                                <React.Fragment key={item.id}>
+                                                    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                                                                    {imgUrl ? (
+                                                                        <img src={imgUrl} alt="Product" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <Package className="w-6 h-6 m-3 text-gray-400" />
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                                                        {item.isBundleParent && (
+                                                                            <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">SET</span>
+                                                                        )}
+                                                                        {item.productNameSnapshot}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500 mt-0.5">
+                                                                        {item.colorSnapshot && `Color: ${item.colorSnapshot}`}
+                                                                        {item.colorSnapshot && item.sizeSnapshot && ' | '}
+                                                                        {item.sizeSnapshot && `Size: ${item.sizeSnapshot}`}
+                                                                        {item.skuSnapshot && (
+                                                                            <>
+                                                                                <br />
+                                                                                <span className="text-gray-400">SKU: {item.skuSnapshot}</span>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-center">{item.qty}</td>
+                                                        <td className="px-4 py-3 text-right">${Number(item.salePriceSnapshot).toFixed(2)}</td>
+                                                        <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-white">
+                                                            ${Number(item.lineTotal).toFixed(2)}
+                                                        </td>
+                                                    </tr>
+                                                    {children.map((child: any) => (
+                                                        <tr key={child.id} className="bg-gray-50/60 dark:bg-gray-900/30">
+                                                            <td className="px-4 py-2 pl-12 text-xs text-gray-600 dark:text-gray-400">
+                                                                ↳ {child.productNameSnapshot}
+                                                                {child.sizeSnapshot && ` · ${child.sizeSnapshot}`}
+                                                                {child.colorSnapshot && ` · ${child.colorSnapshot}`}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-center text-xs text-gray-600 dark:text-gray-400">{child.qty}</td>
+                                                            <td className="px-4 py-2 text-right text-xs text-gray-400">—</td>
+                                                            <td className="px-4 py-2 text-right text-xs text-gray-400">—</td>
+                                                        </tr>
+                                                    ))}
+                                                </React.Fragment>
+                                            );
+                                        });
+                                    })()}
                                 </tbody>
                                 <tfoot className="border-t-2 border-gray-200 dark:border-gray-700">
                                     <tr>

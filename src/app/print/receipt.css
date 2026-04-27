@@ -348,6 +348,34 @@
     white-space: nowrap;
 }
 
+/* ── Bundle children rendered indented under their parent ── */
+.receipt-label .rl-bundle-child {
+    padding-left: 3mm;
+    background: #fafafa;
+}
+
+.receipt-label .rl-bundle-child .rl-item-name {
+    font-size: 6.6pt;
+    font-weight: 600;
+    color: #444;
+}
+
+.receipt-label .rl-bundle-child .rl-item-details {
+    font-size: 5.8pt;
+}
+
+.receipt-label .rl-bundle-tag {
+    display: inline-block;
+    margin-right: 1mm;
+    padding: 0 1mm;
+    font-size: 5.8pt;
+    font-weight: 800;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 0.6mm;
+    vertical-align: 1px;
+}
+
 /* ── Note + item count ──────────────────────────── */
 .receipt-label .rl-note-row {
     display: flex;

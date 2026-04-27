@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useCartStore } from "@/lib/store/cartStore";
-import { X, Plus, Minus, ShoppingBag } from "lucide-react";
+import { useCartStore, cartItemKey } from "@/lib/store/cartStore";
+import { X, Plus, Minus, ShoppingBag, Package } from "lucide-react";
 import Link from "next/link";
 
 export default function CartDrawer() {
@@ -48,62 +48,84 @@ export default function CartDrawer() {
                             </button>
                         </div>
                     ) : (
-                        items.map((item) => (
-                            <div key={item.variantId} className="flex gap-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-                                {/* Image Placeholder */}
-                                <div className="w-20 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg shrink-0 overflow-hidden relative">
-                                    {item.imageUrl ? (
-                                        <img src={item.imageUrl} alt={item.nameKm} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-1">No Image</div>
-                                    )}
-                                </div>
-
-                                {/* Content */}
-                                <div className="flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex justify-between items-start">
-                                            <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2">{item.nameKm}</h3>
-                                            <button
-                                                onClick={() => removeItem(item.variantId)}
-                                                className="text-gray-400 hover:text-red-500 p-1"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                        <div className="text-xs text-gray-500 mt-1 space-y-0.5">
-                                            {item.size && <p>Size: {item.size}</p>}
-                                            {item.color && <p>Color: {item.color}</p>}
-                                        </div>
+                        items.map((item) => {
+                            const key = cartItemKey(item);
+                            const cap = item.kind === 'product' ? item.stockOnHand : item.availableQty;
+                            return (
+                                <div key={key} className="flex gap-4 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                                    {/* Image */}
+                                    <div className="w-20 h-24 bg-gray-200 dark:bg-gray-700 rounded-lg shrink-0 overflow-hidden relative">
+                                        {item.imageUrl ? (
+                                            <img src={item.imageUrl} alt={item.nameKm} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center p-1">No Image</div>
+                                        )}
                                     </div>
 
-                                    <div className="flex justify-between items-end mt-2">
-                                        <div className="font-bold text-blue-600 dark:text-blue-400">
-                                            ${item.salePrice.toFixed(2)}
+                                    {/* Content */}
+                                    <div className="flex-1 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex justify-between items-start gap-2">
+                                                <h3 className="font-bold text-sm text-gray-900 dark:text-white line-clamp-2">
+                                                    {item.kind === 'bundle' && (
+                                                        <span className="inline-flex items-center gap-1 mr-1 px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+                                                            <Package className="w-3 h-3" /> SET
+                                                        </span>
+                                                    )}
+                                                    {item.nameKm}
+                                                </h3>
+                                                <button
+                                                    onClick={() => removeItem(key)}
+                                                    className="text-gray-400 hover:text-red-500 p-1 shrink-0"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            {item.kind === 'product' ? (
+                                                <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                                                    {item.size && <p>Size: {item.size}</p>}
+                                                    {item.color && <p>Color: {item.color}</p>}
+                                                </div>
+                                            ) : (
+                                                <details className="text-xs text-gray-500 mt-1">
+                                                    <summary className="cursor-pointer select-none">What&apos;s inside ({item.components.length})</summary>
+                                                    <ul className="mt-1 space-y-0.5 pl-2">
+                                                        {item.components.map((c) => (
+                                                            <li key={c.variantId}>↳ {c.nameKm}{c.size ? ` · ${c.size}` : ''}{c.color ? ` · ${c.color}` : ''} × {c.qty}</li>
+                                                        ))}
+                                                    </ul>
+                                                </details>
+                                            )}
                                         </div>
 
-                                        {/* Qty Selector */}
-                                        <div className="flex items-center bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                                            <button
-                                                onClick={() => updateQty(item.variantId, item.qty - 1)}
-                                                disabled={item.qty <= 1}
-                                                className="p-1 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white disabled:opacity-50"
-                                            >
-                                                <Minus className="w-4 h-4" />
-                                            </button>
-                                            <span className="w-8 text-center text-sm font-medium">{item.qty}</span>
-                                            <button
-                                                onClick={() => updateQty(item.variantId, item.qty + 1)}
-                                                disabled={item.qty >= item.stockOnHand}
-                                                className="p-1 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white disabled:opacity-50"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                            </button>
+                                        <div className="flex justify-between items-end mt-2">
+                                            <div className="font-bold text-blue-600 dark:text-blue-400">
+                                                ${item.salePrice.toFixed(2)}
+                                            </div>
+
+                                            {/* Qty Selector */}
+                                            <div className="flex items-center bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                                                <button
+                                                    onClick={() => updateQty(key, item.qty - 1)}
+                                                    disabled={item.qty <= 1}
+                                                    className="p-1 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white disabled:opacity-50"
+                                                >
+                                                    <Minus className="w-4 h-4" />
+                                                </button>
+                                                <span className="w-8 text-center text-sm font-medium">{item.qty}</span>
+                                                <button
+                                                    onClick={() => updateQty(key, item.qty + 1)}
+                                                    disabled={item.qty >= cap}
+                                                    className="p-1 text-gray-500 hover:text-black dark:text-gray-300 dark:hover:text-white disabled:opacity-50"
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 

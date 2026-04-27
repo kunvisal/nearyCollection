@@ -12,6 +12,7 @@ interface MappedProduct {
     name: any;
     price: number;
     image: any;
+    isBundle?: boolean;
     [key: string]: any;
 }
 
@@ -33,15 +34,24 @@ export default function ProductRow({ title, seeAllLink = "/products", products =
 
             <div className={styles.scrollContainer}>
                 {products.slice(0, 6).map((product) => (
-                    <Link href={`/product/${product.id}`} key={product.id} className={styles.productCard}>
+                    <Link
+                        href={product.isBundle ? `/bundle/${product.id}` : `/product/${product.id}`}
+                        key={product.id}
+                        className={styles.productCard}
+                    >
                         <div className={styles.imageWrapper}>
+                            {product.isBundle && (
+                                <span className="absolute top-2 left-2 z-10 inline-flex items-center px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700 shadow">
+                                    SET
+                                </span>
+                            )}
                             <Image
                                 src={product.image}
                                 alt={product.name}
-                                width={300} // Responsive placeholder container bounds
-                                height={400} // This will scale via CSS `height: auto`
+                                width={300}
+                                height={400}
                                 className={styles.image}
-                                unoptimized={true} // Allow natural sizes from ext sources
+                                unoptimized={true}
                             />
                         </div>
                         <div className={styles.productName}>{product.name}</div>

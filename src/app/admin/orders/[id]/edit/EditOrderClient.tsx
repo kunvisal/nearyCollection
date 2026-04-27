@@ -12,6 +12,15 @@ import { formatCambodiaDate } from "@/lib/utils/timezone";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import type { AdminVariant, AdminProductImage, AdminProduct, CartItem } from "@/types/admin";
 
+// Discriminated cart line for the edit page — products carry variantId, bundles carry bundleProductId.
+type EditCartProduct = CartItem & { kind: "product" };
+type EditCartBundle = { kind: "bundle"; bundleProductId: string; nameKm: string; salePrice: number; qty: number };
+type EditCartLine = EditCartProduct | EditCartBundle;
+
+function editCartKey(item: EditCartLine): string {
+    return item.kind === "bundle" ? item.bundleProductId : item.variantId;
+}
+
 const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
     JALAT: "Jalat (ចល័ត)",
     VET: "VET (វីរប៊ុនថាំ)",
@@ -27,15 +36,32 @@ export default function EditOrderClient({ order }: { order: any }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
 
-    const [cart, setCart] = useState<CartItem[]>(order?.items?.map((item: any) => ({
-        variantId: item.variantId,
-        productId: 'unknown',
-        nameKm: item.productNameSnapshot,
-        size: item.sizeSnapshot,
-        color: item.colorSnapshot,
-        salePrice: Number(item.salePriceSnapshot),
-        qty: item.qty
-    })) || []);
+    const [cart, setCart] = useState<EditCartLine[]>(
+        (order?.items ?? [])
+            // Skip bundle child rows — they are reconstructed server-side from the parent bundle line.
+            .filter((item: any) => item.parentItemId === null || item.parentItemId === undefined)
+            .map((item: any): EditCartLine => {
+                if (item.isBundleParent) {
+                    return {
+                        kind: "bundle",
+                        bundleProductId: item.bundleProductId,
+                        nameKm: item.productNameSnapshot,
+                        salePrice: Number(item.salePriceSnapshot),
+                        qty: item.qty,
+                    };
+                }
+                return {
+                    kind: "product",
+                    variantId: item.variantId,
+                    productId: "unknown",
+                    nameKm: item.productNameSnapshot,
+                    size: item.sizeSnapshot,
+                    color: item.colorSnapshot,
+                    salePrice: Number(item.salePriceSnapshot),
+                    qty: item.qty,
+                };
+            })
+    );
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [formData, setFormData] = useState({
         customerName: order?.customer?.fullName || "",
@@ -131,48 +157,49 @@ export default function EditOrderClient({ order }: { order: any }) {
 
     const addToCart = (variant: AdminVariant, product: AdminProduct) => {
         setCart(prev => {
-            const existingIndex = prev.findIndex(item => item.variantId === variant.id);
+            const existingIndex = prev.findIndex(
+                item => item.kind === "product" && item.variantId === variant.id,
+            );
             if (existingIndex >= 0) {
-                // check stock limit
                 const currentQty = prev[existingIndex].qty;
                 const maxStock = variant.stockOnHand - variant.reservedQty;
                 if (currentQty >= maxStock) {
-                    addToast("warning", "Stock Limit", 'Not enough stock available.');
+                    addToast("warning", "Stock Limit", "Not enough stock available.");
                     return prev;
                 }
                 const newCart = [...prev];
                 newCart[existingIndex] = { ...newCart[existingIndex], qty: currentQty + 1 };
                 return newCart;
             }
-            return [...prev, {
+            const line: EditCartProduct = {
+                kind: "product",
                 variantId: variant.id,
                 productId: product.id,
                 nameKm: product.nameKm,
                 size: variant.size,
                 color: variant.color,
                 salePrice: Number(variant.salePrice),
-                qty: 1
-            }];
+                qty: 1,
+            };
+            return [...prev, line];
         });
         setIsProductModalOpen(false);
         setSelectedProduct(null);
     };
 
-    const updateCartQty = (variantId: string, delta: number) => {
-        setCart(prev => {
-            return prev.map(item => {
-                if (item.variantId === variantId) {
-                    const newQty = item.qty + delta;
-                    if (newQty <= 0) return item; // Handled by remove
-                    return { ...item, qty: newQty };
-                }
-                return item;
-            });
-        });
+    const updateCartQty = (key: string, delta: number) => {
+        setCart(prev =>
+            prev.map(item => {
+                if (editCartKey(item) !== key) return item;
+                const newQty = item.qty + delta;
+                if (newQty <= 0) return item;
+                return { ...item, qty: newQty };
+            }),
+        );
     };
 
-    const removeFromCart = (variantId: string) => {
-        setCart(prev => prev.filter(item => item.variantId !== variantId));
+    const removeFromCart = (key: string) => {
+        setCart(prev => prev.filter(item => editCartKey(item) !== key));
     };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.salePrice * item.qty), 0);
@@ -276,12 +303,11 @@ export default function EditOrderClient({ order }: { order: any }) {
         }
 
         startTransition(async () => {
-            const payloadItems = cart.map(item => ({
-                variantId: item.variantId,
-                qty: item.qty,
-                salePrice: item.salePrice,
-                discount: 0,
-            }));
+            const payloadItems = cart.map(item =>
+                item.kind === "bundle"
+                    ? { bundleProductId: item.bundleProductId, qty: item.qty, salePrice: item.salePrice, discount: 0 }
+                    : { variantId: item.variantId, qty: item.qty, salePrice: item.salePrice, discount: 0 },
+            );
 
             const res = await updateOrderAction(
                 order.id,
@@ -407,7 +433,7 @@ export default function EditOrderClient({ order }: { order: any }) {
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                             {filteredProducts.map(product => {
-                                const totalInCart = cart.filter(c => c.productId === product.id).reduce((sum, c) => sum + c.qty, 0);
+                                const totalInCart = cart.filter(c => c.kind === "product" && c.productId === product.id).reduce((sum, c) => sum + c.qty, 0);
                                 const totalAvailableStock = product.variants.reduce((sum, v) => sum + (v.stockOnHand - v.reservedQty), 0);
                                 const isLowStock = totalAvailableStock <= 5;
                                 return (
@@ -484,20 +510,28 @@ export default function EditOrderClient({ order }: { order: any }) {
                                 <div className="p-4 space-y-5">
                                     {/* Cart Items List */}
                                     <div className="space-y-4">
-                                        {cart.map(item => (
-                                            <div key={item.variantId} className="flex gap-4 items-center">
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-medium text-gray-900 dark:text-white truncate">{item.nameKm}</h4>
-                                                    <div className="text-sm text-gray-500">{item.size} • {item.color}</div>
-                                                    <div className="font-semibold text-gray-900 dark:text-white mt-1">${(item.salePrice * item.qty).toFixed(2)}</div>
+                                        {cart.map(item => {
+                                            const key = editCartKey(item);
+                                            return (
+                                                <div key={key} className="flex gap-4 items-center">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-medium text-gray-900 dark:text-white truncate">{item.nameKm}</h4>
+                                                        {item.kind === "product" && (
+                                                            <div className="text-sm text-gray-500">{item.size} • {item.color}</div>
+                                                        )}
+                                                        {item.kind === "bundle" && (
+                                                            <div className="text-xs text-amber-600 dark:text-amber-400">SET</div>
+                                                        )}
+                                                        <div className="font-semibold text-gray-900 dark:text-white mt-1">${(item.salePrice * item.qty).toFixed(2)}</div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
+                                                        <button onClick={() => { if (item.qty > 1) updateCartQty(key, -1); else removeFromCart(key); }} className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"><Minus className="w-4 h-4" /></button>
+                                                        <span className="w-4 text-center text-sm font-medium">{item.qty}</span>
+                                                        <button onClick={() => updateCartQty(key, 1)} className="w-8 h-8 flex items-center justify-center text-[#e21b70]"><Plus className="w-4 h-4" /></button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
-                                                    <button onClick={() => { if (item.qty > 1) updateCartQty(item.variantId, -1); else removeFromCart(item.variantId); }} className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"><Minus className="w-4 h-4" /></button>
-                                                    <span className="w-4 text-center text-sm font-medium">{item.qty}</span>
-                                                    <button onClick={() => updateCartQty(item.variantId, 1)} className="w-8 h-8 flex items-center justify-center text-[#e21b70]"><Plus className="w-4 h-4" /></button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
 
                                     <hr className="border-gray-100 dark:border-gray-800" />
@@ -619,15 +653,22 @@ export default function EditOrderClient({ order }: { order: any }) {
                             </div>
 
                             <div className="border-t border-b border-gray-200 py-4 space-y-3 mb-4">
-                                {receiptData.items.map((item: any) => (
-                                    <div key={item.variantId} className="flex justify-between text-sm">
-                                        <div>
-                                            <div className="font-medium">{item.nameKm}</div>
-                                            <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} ({item.size}, {item.color})</div>
+                                {receiptData.items.map((item: EditCartLine) => {
+                                    const key = editCartKey(item);
+                                    return (
+                                        <div key={key} className="flex justify-between text-sm">
+                                            <div>
+                                                <div className="font-medium">{item.nameKm}</div>
+                                                {item.kind === "product" ? (
+                                                    <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} ({item.size}, {item.color})</div>
+                                                ) : (
+                                                    <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} [ឈុត]</div>
+                                                )}
+                                            </div>
+                                            <div className="font-medium">${(item.salePrice * item.qty).toFixed(2)}</div>
                                         </div>
-                                        <div className="font-medium">${(item.salePrice * item.qty).toFixed(2)}</div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             <div className="space-y-2 text-sm">

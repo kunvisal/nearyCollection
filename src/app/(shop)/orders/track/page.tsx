@@ -109,12 +109,37 @@ export default function TrackOrderPage() {
 
                         <div className="space-y-4">
                             <h4 className="font-bold text-gray-900 dark:text-white">Order Summary</h4>
-                            {orderInfo.items.map((item: any, idx: number) => (
-                                <div key={idx} className="flex justify-between text-sm py-2">
-                                    <span className="text-gray-600 dark:text-gray-400">{item.qty}x {item.productNameSnapshot}</span>
-                                    <span className="font-medium">${item.lineTotal.toFixed(2)}</span>
-                                </div>
-                            ))}
+                            {(() => {
+                                const allItems = (orderInfo.items as any[]) || [];
+                                const topLevel = allItems.filter((it) => !it.parentItemId);
+                                const childrenByParent = allItems.reduce<Record<string, any[]>>((acc, it) => {
+                                    if (it.parentItemId) (acc[it.parentItemId] ||= []).push(it);
+                                    return acc;
+                                }, {});
+                                return topLevel.map((item: any) => {
+                                    const children = item.isBundleParent ? childrenByParent[item.id] || [] : [];
+                                    return (
+                                        <div key={item.id} className="py-1">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-gray-600 dark:text-gray-400">
+                                                    {item.isBundleParent && (
+                                                        <span className="inline-block mr-1 px-1 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-700">SET</span>
+                                                    )}
+                                                    {item.qty}x {item.productNameSnapshot}
+                                                </span>
+                                                <span className="font-medium">${Number(item.lineTotal).toFixed(2)}</span>
+                                            </div>
+                                            {children.length > 0 && (
+                                                <ul className="mt-1 ml-4 text-xs text-gray-500 space-y-0.5">
+                                                    {children.map((c: any) => (
+                                                        <li key={c.id}>↳ {c.productNameSnapshot}{c.sizeSnapshot ? ` · ${c.sizeSnapshot}` : ''}{c.colorSnapshot ? ` · ${c.colorSnapshot}` : ''} × {c.qty}</li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    );
+                                });
+                            })()}
                             <div className="flex justify-between font-bold text-lg text-gray-900 dark:text-white pt-2 border-t border-gray-100 dark:border-gray-700">
                                 <span>Total</span>
                                 <span className="text-blue-600 dark:text-blue-400">${orderInfo.total.toFixed(2)}</span>

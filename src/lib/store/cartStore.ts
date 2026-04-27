@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export interface CartItem {
+export interface CartItemProduct {
+    kind: 'product';
     variantId: string;
     productId: string;
     nameKm: string;
@@ -15,19 +16,45 @@ export interface CartItem {
     stockOnHand: number;
 }
 
+export interface CartItemBundle {
+    kind: 'bundle';
+    bundleProductId: string;
+    nameKm: string;
+    nameEn?: string | null;
+    salePrice: number;
+    imageUrl?: string | null;
+    qty: number;
+    availableQty: number;
+    components: Array<{
+        variantId: string;
+        nameKm: string;
+        size: string;
+        color: string;
+        qty: number;
+    }>;
+}
+
+export type CartItem = CartItemProduct | CartItemBundle;
+
+export function cartItemKey(item: CartItem): string {
+    return item.kind === 'product' ? item.variantId : item.bundleProductId;
+}
+
+function maxQty(item: CartItem): number {
+    return item.kind === 'product' ? item.stockOnHand : item.availableQty;
+}
+
 interface CartState {
     items: CartItem[];
     isDrawerOpen: boolean;
 
-    // Actions
     setIsDrawerOpen: (isOpen: boolean) => void;
-    addItem: (item: Omit<CartItem, 'qty'>, qty?: number) => void;
-    removeItem: (variantId: string) => void;
-    updateQty: (variantId: string, qty: number) => void;
+    addItem: (item: Omit<CartItemProduct, 'qty'> | Omit<CartItemBundle, 'qty'>, qty?: number) => void;
+    /** key = variantId for products, bundleProductId for bundles */
+    removeItem: (key: string) => void;
+    updateQty: (key: string, qty: number) => void;
     clearCart: () => void;
 
-    // Computed values that we can just calculate on the fly in components, 
-    // but helpful to have in store if needed
     getCartTotal: () => number;
     getCartCount: () => number;
 }
@@ -40,60 +67,63 @@ export const useCartStore = create<CartState>()(
 
             setIsDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
 
-            addItem: (item, qty = 1) => {
+            addItem: (incoming, qty = 1) => {
                 set((state) => {
-                    const existingItemIndex = state.items.findIndex(i => i.variantId === item.variantId);
+                    const newItem = { ...(incoming as CartItem), qty } as CartItem;
+                    const key = cartItemKey(newItem);
+                    const idx = state.items.findIndex((i) => cartItemKey(i) === key);
 
-                    if (existingItemIndex >= 0) {
-                        // Item exists, update quantity
-                        const updatedItems = [...state.items];
-                        const newQty = updatedItems[existingItemIndex].qty + qty;
-
-                        // Respect stock limits if possible
-                        updatedItems[existingItemIndex].qty = Math.min(newQty, item.stockOnHand);
-
-                        return { items: updatedItems, isDrawerOpen: true };
-                    } else {
-                        // New item
-                        return {
-                            items: [...state.items, { ...item, qty: Math.min(qty, item.stockOnHand) }],
-                            isDrawerOpen: true
-                        };
+                    if (idx >= 0) {
+                        const updated = [...state.items];
+                        const merged = { ...updated[idx], qty: updated[idx].qty + qty } as CartItem;
+                        merged.qty = Math.min(merged.qty, maxQty(merged));
+                        updated[idx] = merged;
+                        return { items: updated, isDrawerOpen: true };
                     }
+                    newItem.qty = Math.min(newItem.qty, maxQty(newItem));
+                    return { items: [...state.items, newItem], isDrawerOpen: true };
                 });
             },
 
-            removeItem: (variantId) => {
+            removeItem: (key) => {
                 set((state) => ({
-                    items: state.items.filter(i => i.variantId !== variantId)
+                    items: state.items.filter((i) => cartItemKey(i) !== key),
                 }));
             },
 
-            updateQty: (variantId, qty) => {
+            updateQty: (key, qty) => {
                 set((state) => ({
-                    items: state.items.map(item => {
-                        if (item.variantId === variantId) {
-                            return { ...item, qty: Math.min(Math.max(1, qty), item.stockOnHand) };
-                        }
-                        return item;
-                    })
+                    items: state.items.map((item) => {
+                        if (cartItemKey(item) !== key) return item;
+                        const clamped = Math.min(Math.max(1, qty), maxQty(item));
+                        return { ...item, qty: clamped } as CartItem;
+                    }),
                 }));
             },
 
             clearCart: () => set({ items: [] }),
 
-            getCartTotal: () => {
-                return get().items.reduce((total, item) => total + (item.salePrice * item.qty), 0);
-            },
+            getCartTotal: () =>
+                get().items.reduce((total, item) => total + item.salePrice * item.qty, 0),
 
-            getCartCount: () => {
-                return get().items.reduce((count, item) => count + item.qty, 0);
-            }
+            getCartCount: () =>
+                get().items.reduce((count, item) => count + item.qty, 0),
         }),
         {
             name: 'neary-cart-storage',
-            // Only persist items, not UI state like isDrawerOpen
             partialize: (state) => ({ items: state.items }),
+            // Migrate older persisted carts missing the discriminator tag — they are all products.
+            migrate: ((persisted: unknown) => {
+                const obj = persisted as { items?: Array<Record<string, unknown>> } | null | undefined;
+                if (!obj?.items) return obj as never;
+                return {
+                    ...obj,
+                    items: obj.items.map((it) =>
+                        it.kind ? it : { ...it, kind: 'product' as const },
+                    ),
+                } as never;
+            }),
+            version: 2,
         }
     )
 );

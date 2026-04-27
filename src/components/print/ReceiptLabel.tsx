@@ -51,6 +51,9 @@ type ReceiptOrder = {
         qty: number;
         salePriceSnapshot: unknown;
         lineTotal: unknown;
+        parentItemId?: string | null;
+        isBundleParent?: boolean;
+        bundleProductId?: string | null;
     }>;
 };
 
@@ -86,7 +89,19 @@ export default function ReceiptLabel({
     const paymentMethod = PAYMENT_METHOD_LABEL[order.paymentMethod] || order.paymentMethod;
     const paymentStatusKm = PAYMENT_STATUS_KM[order.paymentStatus] || order.paymentStatus;
     const discount = num(order.discount);
-    const totalQty = order.items.reduce((sum, it) => sum + it.qty, 0);
+    const topLevelItems = order.items.filter((it) => !it.parentItemId);
+    const childrenByParent = order.items.reduce<Record<string, typeof order.items>>((acc, it) => {
+        if (it.parentItemId) {
+            (acc[it.parentItemId] ||= []).push(it);
+        }
+        return acc;
+    }, {});
+    // Count physical pieces — each child carries its own qty already (bundleQty × componentQty),
+    // so children alone represent the items inside a bundle. Sum children + standalone product rows.
+    const totalQty = order.items.reduce(
+        (sum, it) => sum + (it.isBundleParent ? 0 : it.qty),
+        0,
+    );
     const paidStatusKm = order.paymentStatus === "PAID" ? "បានទូទាត់រួច" : "មិនទាន់ទូទាត់";
 
     const isPP = order.deliveryZone === "PP";
@@ -165,19 +180,40 @@ export default function ReceiptLabel({
 
             {/* ── Items list ─────────────────────────────────── */}
             <div className="rl-items">
-                {order.items.map((item) => {
+                {topLevelItems.map((item) => {
                     const details = [item.sizeSnapshot && `Size ${item.sizeSnapshot}`, item.colorSnapshot]
                         .filter(Boolean)
                         .join(" · ");
+                    const children = item.isBundleParent ? childrenByParent[item.id] || [] : [];
                     return (
-                        <div key={item.id} className="rl-item">
-                            <div className="rl-item-info">
-                                <div className="rl-item-name">{item.productNameSnapshot}</div>
-                                {details && <div className="rl-item-details">{details}</div>}
+                        <React.Fragment key={item.id}>
+                            <div className="rl-item">
+                                <div className="rl-item-info">
+                                    <div className="rl-item-name">
+                                        {item.isBundleParent && <span className="rl-bundle-tag">SET · ឈុត </span>}
+                                        {item.productNameSnapshot}
+                                    </div>
+                                    {details && <div className="rl-item-details">{details}</div>}
+                                </div>
+                                <div className="rl-item-qty">×{item.qty}</div>
+                                <div className="rl-item-amt">${num(item.lineTotal).toFixed(2)}</div>
                             </div>
-                            <div className="rl-item-qty">×{item.qty}</div>
-                            <div className="rl-item-amt">${num(item.lineTotal).toFixed(2)}</div>
-                        </div>
+                            {children.map((child) => {
+                                const childDetails = [child.sizeSnapshot && `Size ${child.sizeSnapshot}`, child.colorSnapshot]
+                                    .filter(Boolean)
+                                    .join(" · ");
+                                return (
+                                    <div key={child.id} className="rl-item rl-bundle-child">
+                                        <div className="rl-item-info">
+                                            <div className="rl-item-name">↳ {child.productNameSnapshot}</div>
+                                            {childDetails && <div className="rl-item-details">{childDetails}</div>}
+                                        </div>
+                                        <div className="rl-item-qty">×{child.qty}</div>
+                                        <div className="rl-item-amt"></div>
+                                    </div>
+                                );
+                            })}
+                        </React.Fragment>
                     );
                 })}
             </div>

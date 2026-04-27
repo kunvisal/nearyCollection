@@ -3,7 +3,9 @@
     "allow": [
       "mcp__claude_ai_Supabase__execute_sql",
       "Bash(npm install:*)",
-      "Bash(ls -la *.md)"
+      "Bash(ls -la *.md)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

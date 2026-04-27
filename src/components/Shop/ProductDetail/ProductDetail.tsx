@@ -41,6 +41,7 @@ export default function ProductDetail({ product, settings }: { product: any, set
     const handleAddToCart = () => {
         if (selectedVariant && !isOutOfStock) {
             addItem({
+                kind: 'product',
                 variantId: selectedVariant.id,
                 productId: product.id,
                 nameKm: product.nameKm,

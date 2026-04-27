@@ -40,12 +40,21 @@ export default function CheckoutPage() {
         e.preventDefault();
 
         startTransition(async () => {
-            const payloadItems = items.map(item => ({
-                variantId: item.variantId,
-                qty: item.qty,
-                salePrice: item.salePrice,
-                discount: 0,
-            }));
+            const payloadItems = items.map(item =>
+                item.kind === "bundle"
+                    ? {
+                          bundleProductId: item.bundleProductId,
+                          qty: item.qty,
+                          salePrice: item.salePrice,
+                          discount: 0,
+                      }
+                    : {
+                          variantId: item.variantId,
+                          qty: item.qty,
+                          salePrice: item.salePrice,
+                          discount: 0,
+                      }
+            );
 
             const res = await createOrderAction(
                 { fullName: formData.customerName, phone: formData.customerPhone },
@@ -196,14 +205,18 @@ export default function CheckoutPage() {
                 <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="font-bold text-gray-900 dark:text-white mb-4">Summary</h2>
                     <div className="space-y-3 mb-4">
-                        {items.map(item => (
-                            <div key={item.variantId} className="flex justify-between text-sm">
-                                <span className="text-gray-600 dark:text-gray-400 line-clamp-1 pr-4">
-                                    {item.qty}x {item.nameKm} {item.size ? `(${item.size})` : ''}
-                                </span>
-                                <span className="font-medium text-gray-900 dark:text-white">${(item.salePrice * item.qty).toFixed(2)}</span>
-                            </div>
-                        ))}
+                        {items.map(item => {
+                            const key = item.kind === 'product' ? item.variantId : item.bundleProductId;
+                            const detail = item.kind === 'product' && item.size ? `(${item.size})` : item.kind === 'bundle' ? '· SET' : '';
+                            return (
+                                <div key={key} className="flex justify-between text-sm">
+                                    <span className="text-gray-600 dark:text-gray-400 line-clamp-1 pr-4">
+                                        {item.qty}x {item.nameKm} {detail}
+                                    </span>
+                                    <span className="font-medium text-gray-900 dark:text-white">${(item.salePrice * item.qty).toFixed(2)}</span>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <div className="border-t border-gray-100 dark:border-gray-700 pt-3 space-y-2">

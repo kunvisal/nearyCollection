@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { ChevronDownIcon, HorizontaLDots } from "../icons/index";
-import { LayoutDashboard, MonitorSmartphone, ShoppingBag, PackageOpen, Truck, ListTree, Tags, Settings, LogOut, TagsIcon } from "lucide-react";
+import { LayoutDashboard, MonitorSmartphone, ShoppingBag, PackageOpen, Truck, ListTree, Tags, Settings, LogOut, TagsIcon, Package } from "lucide-react";
 
 type NavItem = {
   name: string;
@@ -34,6 +34,11 @@ const navItems: NavItem[] = [
     icon: <Tags size={20} />,
     name: "Products",
     path: "/admin/products",
+  },
+  {
+    icon: <Package size={20} />,
+    name: "Bundles",
+    path: "/admin/bundles",
   },
   {
     icon: <ListTree size={20} />,

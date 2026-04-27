@@ -2,14 +2,50 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import Image from "next/image";
-import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon, ExternalLink } from "lucide-react";
+import { Plus, Minus, Search, ShoppingCart, Trash2, X, Loader2, ImageIcon, ExternalLink, Package } from "lucide-react";
 import { createOrderAction } from "@/app/actions/orderActions";
 import { getDeliveryFeesAction } from "@/app/actions/shopActions";
 import { useToast } from "@/context/ToastContext";
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import { MessengerImport } from "@/components/admin/pos/MessengerImport";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
-import type { AdminVariant, AdminProductImage, AdminProduct, CartItem } from "@/types/admin";
+import type { AdminVariant, AdminProductImage, AdminProduct } from "@/types/admin";
+
+type POSCartProduct = {
+    kind: "product";
+    variantId: string;
+    productId: string;
+    nameKm: string;
+    size: string;
+    color: string;
+    salePrice: number;
+    qty: number;
+    stockOnHand: number;
+};
+type POSCartBundle = {
+    kind: "bundle";
+    bundleProductId: string;
+    nameKm: string;
+    salePrice: number;
+    qty: number;
+    availableQty: number;
+    components: Array<{ variantId: string; nameKm: string; size: string; color: string; qty: number }>;
+};
+type POSCartLine = POSCartProduct | POSCartBundle;
+
+function computeBundleAvailableQty(product: AdminProduct): number {
+    if (!product.bundleComponents || product.bundleComponents.length === 0) return 0;
+    return Math.floor(Math.min(...product.bundleComponents.map(c => c.variant.stockOnHand / c.qty)));
+}
+
+function computeBundleSuggestedPrice(product: AdminProduct): number {
+    if (!product.bundleComponents) return 0;
+    const sum = product.bundleComponents.reduce(
+        (acc, c) => acc + Number(c.variant.salePrice) * c.qty, 0,
+    );
+    const discount = product.bundleDiscount != null ? Number(product.bundleDiscount) : 0;
+    return Math.max(0, sum - discount);
+}
 
 const DELIVERY_SERVICE_LABELS: Record<DeliveryService, string> = {
     JALAT: "Jalat (ចល័ត)",
@@ -26,7 +62,7 @@ export default function POSPage() {
     const [stockFilter, setStockFilter] = useState<'ALL' | 'IN_STOCK' | 'OUT_OF_STOCK'>('ALL');
     const [isLoading, setIsLoading] = useState(true);
 
-    const [cart, setCart] = useState<CartItem[]>([]);
+    const [cart, setCart] = useState<POSCartLine[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [formData, setFormData] = useState({
         customerName: "",
@@ -81,11 +117,15 @@ export default function POSPage() {
         }
         if (stockFilter === 'IN_STOCK') {
             filtered = filtered.filter(p =>
-                p.variants.some(v => (v.stockOnHand - v.reservedQty) > 0)
+                p.isBundle
+                    ? computeBundleAvailableQty(p) > 0
+                    : p.variants.some(v => (v.stockOnHand - v.reservedQty) > 0)
             );
         } else if (stockFilter === 'OUT_OF_STOCK') {
             filtered = filtered.filter(p =>
-                p.variants.every(v => (v.stockOnHand - v.reservedQty) <= 0)
+                p.isBundle
+                    ? computeBundleAvailableQty(p) <= 0
+                    : p.variants.every(v => (v.stockOnHand - v.reservedQty) <= 0)
             );
         }
         setFilteredProducts(filtered);
@@ -109,14 +149,14 @@ export default function POSPage() {
             const res = await fetch("/api/admin/products");
             const json = await res.json();
             if (json.success) {
-                // Show all active products/variants, including out-of-stock ones
+                // Include regular products with active variants + bundle products
                 const activeProds = json.data
                     .filter((p: any) => p.isActive)
                     .map((p: any) => ({
                         ...p,
                         variants: p.variants.filter((v: any) => v.isActive)
                     }))
-                    .filter((p: any) => p.variants.length > 0);
+                    .filter((p: any) => p.isBundle || p.variants.length > 0);
 
                 setProducts(activeProds);
             }
@@ -128,16 +168,61 @@ export default function POSPage() {
     };
 
     const handleProductClick = (product: AdminProduct) => {
-        setSelectedProduct(product);
-        setIsProductModalOpen(true);
+        if (product.isBundle) {
+            addBundleToCart(product);
+        } else {
+            setSelectedProduct(product);
+            setIsProductModalOpen(true);
+        }
+    };
+
+    const addBundleToCart = (product: AdminProduct) => {
+        const availableQty = computeBundleAvailableQty(product);
+        const salePrice = computeBundleSuggestedPrice(product);
+        setCart(prev => {
+            const existingIndex = prev.findIndex(
+                item => item.kind === "bundle" && item.bundleProductId === product.id,
+            );
+            if (existingIndex >= 0) {
+                const currentQty = prev[existingIndex].qty;
+                if (currentQty >= availableQty) {
+                    addToast("warning", "Stock Limit", "Not enough bundle sets available.");
+                    return prev;
+                }
+                const newCart = [...prev];
+                newCart[existingIndex] = { ...newCart[existingIndex], qty: currentQty + 1 };
+                return newCart;
+            }
+            if (availableQty <= 0) {
+                addToast("warning", "Out of Stock", "This bundle set is out of stock.");
+                return prev;
+            }
+            const line: POSCartBundle = {
+                kind: "bundle",
+                bundleProductId: product.id,
+                nameKm: product.nameKm,
+                salePrice,
+                qty: 1,
+                availableQty,
+                components: (product.bundleComponents ?? []).map(c => ({
+                    variantId: c.variantId,
+                    nameKm: c.variant.product.nameKm,
+                    size: "",
+                    color: "",
+                    qty: c.qty,
+                })),
+            };
+            return [...prev, line];
+        });
     };
 
     const addToCart = (variant: AdminVariant, product: AdminProduct) => {
         setCart(prev => {
             const maxStock = variant.stockOnHand - variant.reservedQty;
-            const existingIndex = prev.findIndex(item => item.variantId === variant.id);
+            const existingIndex = prev.findIndex(
+                item => item.kind === "product" && item.variantId === variant.id,
+            );
             if (existingIndex >= 0) {
-                // check stock limit
                 const currentQty = prev[existingIndex].qty;
                 if (currentQty >= maxStock) {
                     addToast("warning", "Stock Limit", 'Not enough stock available.');
@@ -151,35 +236,39 @@ export default function POSPage() {
                 addToast("warning", "Out of Stock", 'This item is out of stock.');
                 return prev;
             }
-            return [...prev, {
+            const line: POSCartProduct = {
+                kind: "product",
                 variantId: variant.id,
                 productId: product.id,
                 nameKm: product.nameKm,
                 size: variant.size,
                 color: variant.color,
                 salePrice: Number(variant.salePrice),
-                qty: 1
-            }];
+                qty: 1,
+                stockOnHand: variant.stockOnHand - variant.reservedQty,
+            };
+            return [...prev, line];
         });
         setIsProductModalOpen(false);
         setSelectedProduct(null);
     };
 
-    const updateCartQty = (variantId: string, delta: number) => {
-        setCart(prev => {
-            return prev.map(item => {
-                if (item.variantId === variantId) {
-                    const newQty = item.qty + delta;
-                    if (newQty <= 0) return item; // Handled by remove
-                    return { ...item, qty: newQty };
-                }
-                return item;
-            });
-        });
+    const getCartKey = (item: POSCartLine) =>
+        item.kind === "product" ? item.variantId : item.bundleProductId;
+
+    const updateCartQty = (key: string, delta: number) => {
+        setCart(prev =>
+            prev.map(item => {
+                if (getCartKey(item) !== key) return item;
+                const newQty = item.qty + delta;
+                if (newQty <= 0) return item;
+                return { ...item, qty: newQty };
+            }),
+        );
     };
 
-    const removeFromCart = (variantId: string) => {
-        setCart(prev => prev.filter(item => item.variantId !== variantId));
+    const removeFromCart = (key: string) => {
+        setCart(prev => prev.filter(item => getCartKey(item) !== key));
     };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.salePrice * item.qty), 0);
@@ -216,12 +305,11 @@ export default function POSPage() {
         }
 
         startTransition(async () => {
-            const payloadItems = cart.map(item => ({
-                variantId: item.variantId,
-                qty: item.qty,
-                salePrice: item.salePrice,
-                discount: 0,
-            }));
+            const payloadItems = cart.map(item =>
+                item.kind === "bundle"
+                    ? { bundleProductId: item.bundleProductId, qty: item.qty, salePrice: item.salePrice, discount: 0 }
+                    : { variantId: item.variantId, qty: item.qty, salePrice: item.salePrice, discount: 0 },
+            );
 
             const res = await createOrderAction(
                 { fullName: formData.customerName, phone: formData.customerPhone },
@@ -314,7 +402,11 @@ export default function POSPage() {
             `Address: ${receiptData.deliveryAddress || '-'}\n` +
             `Delivery Service: ${DELIVERY_SERVICE_LABELS[receiptData.deliveryService as DeliveryService] || '-'}\n` +
             `-------------------\n` +
-            receiptData.items.map((i: any) => `${i.nameKm} (${i.size}, ${i.color}) x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`).join('\n') +
+            receiptData.items.map((i: POSCartLine) =>
+                i.kind === "bundle"
+                    ? `${i.nameKm} [ឈុត] x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`
+                    : `${i.nameKm} (${i.size}, ${i.color}) x${i.qty} = $${(i.salePrice * i.qty).toFixed(2)}`
+            ).join('\n') +
             `\n-------------------\n` +
             `Subtotal: $${receiptData.subtotal.toFixed(2)}\n` +
             (receiptData.discount > 0 ? `Discount: -$${receiptData.discount.toFixed(2)}\n` : '') +
@@ -329,7 +421,10 @@ export default function POSPage() {
 
     const buildMessengerBlocks = (data: any, rate = khrRate): [string, string] => {
         const itemLines = data.items
-            .map((item: any) => {
+            .map((item: POSCartLine) => {
+                if (item.kind === "bundle") {
+                    return `• ${item.nameKm} [ឈុត] x${item.qty} = $${(item.salePrice * item.qty).toFixed(2)}`;
+                }
                 const variant = [item.size, item.color].filter(Boolean).join("/");
                 return `• ${item.nameKm}${variant ? ` (${variant})` : ""} x${item.qty} = $${(item.salePrice * item.qty).toFixed(2)}`;
             })
@@ -472,10 +567,20 @@ export default function POSPage() {
                     ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                             {filteredProducts.map(product => {
-                                const totalInCart = cart.filter(c => c.productId === product.id).reduce((sum, c) => sum + c.qty, 0);
-                                const totalAvailableStock = product.variants.reduce((sum, v) => sum + (v.stockOnHand - v.reservedQty), 0);
-                                const isOutOfStock = totalAvailableStock === 0;
-                                const isLowStock = !isOutOfStock && totalAvailableStock <= 5;
+                                const isBundle = !!product.isBundle;
+                                const availableStock = isBundle
+                                    ? computeBundleAvailableQty(product)
+                                    : product.variants.reduce((sum, v) => sum + (v.stockOnHand - v.reservedQty), 0);
+                                const displayPrice = isBundle
+                                    ? computeBundleSuggestedPrice(product)
+                                    : (product.variants.length > 0 ? Math.min(...product.variants.map(v => Number(v.salePrice))) : 0);
+                                const totalInCart = cart
+                                    .filter(c => isBundle
+                                        ? c.kind === "bundle" && c.bundleProductId === product.id
+                                        : c.kind === "product" && c.productId === product.id)
+                                    .reduce((sum, c) => sum + c.qty, 0);
+                                const isOutOfStock = availableStock === 0;
+                                const isLowStock = !isOutOfStock && availableStock <= 5;
                                 return (
                                     <div key={product.id} className="relative group cursor-pointer" onClick={() => handleProductClick(product)}>
                                         <div className="aspect-square relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden mb-2">
@@ -484,17 +589,25 @@ export default function POSPage() {
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-gray-400"><ImageIcon className="w-8 h-8 opacity-50" /></div>
                                             )}
-                                            {/* Quick Update Stock Link */}
-                                            <a
-                                                href={`/admin/products/${product.id}#variants`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
-                                                title="Update stock"
-                                                className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <ExternalLink className="w-3.5 h-3.5" />
-                                            </a>
+                                            {/* Bundle badge */}
+                                            {isBundle && (
+                                                <span className="absolute top-2 left-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-bold rounded-md bg-amber-100 text-amber-700 z-10">
+                                                    <Package className="w-3 h-3" /> SET
+                                                </span>
+                                            )}
+                                            {/* Quick Update Stock Link (products only) */}
+                                            {!isBundle && (
+                                                <a
+                                                    href={`/admin/products/${product.id}#variants`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    title="Update stock"
+                                                    className="absolute top-2 left-2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <ExternalLink className="w-3.5 h-3.5" />
+                                                </a>
+                                            )}
                                             {/* Quick Add Button / Counter inside Image */}
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleProductClick(product); }}
@@ -510,7 +623,7 @@ export default function POSPage() {
                                         <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1 text-[15px]">{product.nameKm}</h3>
                                         <div className="flex justify-between items-center mt-1">
                                             <div className="text-gray-600 dark:text-gray-400 text-sm font-medium">
-                                                from ${product.variants.length > 0 ? Math.min(...product.variants.map(v => Number(v.salePrice))).toFixed(2) : "0.00"}
+                                                ${displayPrice.toFixed(2)}
                                             </div>
                                             <div className={`text-[11px] px-1.5 py-0.5 rounded-md border font-bold ${
                                                 isOutOfStock
@@ -519,7 +632,7 @@ export default function POSPage() {
                                                         ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800/50'
                                                         : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
                                             }`}>
-                                                {totalAvailableStock} in stock
+                                                {isBundle ? `${availableStock} sets` : `${availableStock} in stock`}
                                             </div>
                                         </div>
                                     </div>
@@ -567,20 +680,31 @@ export default function POSPage() {
                                 <div className="p-4 space-y-5">
                                     {/* Cart Items List */}
                                     <div className="space-y-4">
-                                        {cart.map(item => (
-                                            <div key={item.variantId} className="flex gap-4 items-center">
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-medium text-gray-900 dark:text-white truncate">{item.nameKm}</h4>
-                                                    <div className="text-sm text-gray-500">{item.size} • {item.color}</div>
-                                                    <div className="font-semibold text-gray-900 dark:text-white mt-1">${(item.salePrice * item.qty).toFixed(2)}</div>
+                                        {cart.map(item => {
+                                            const key = getCartKey(item);
+                                            return (
+                                                <div key={key} className="flex gap-4 items-center">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-medium text-gray-900 dark:text-white truncate flex items-center gap-1">
+                                                            {item.kind === "bundle" && <Package className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                                                            {item.nameKm}
+                                                        </h4>
+                                                        {item.kind === "product" && (
+                                                            <div className="text-sm text-gray-500">{item.size} • {item.color}</div>
+                                                        )}
+                                                        {item.kind === "bundle" && (
+                                                            <div className="text-xs text-amber-600 dark:text-amber-400">SET — {item.components.length} items</div>
+                                                        )}
+                                                        <div className="font-semibold text-gray-900 dark:text-white mt-1">${(item.salePrice * item.qty).toFixed(2)}</div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
+                                                        <button onClick={() => { if (item.qty > 1) updateCartQty(key, -1); else removeFromCart(key); }} className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"><Minus className="w-4 h-4" /></button>
+                                                        <span className="w-4 text-center text-sm font-medium">{item.qty}</span>
+                                                        <button onClick={() => updateCartQty(key, 1)} className="w-8 h-8 flex items-center justify-center text-[#e21b70]"><Plus className="w-4 h-4" /></button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-800 rounded-full px-2 py-1">
-                                                    <button onClick={() => { if (item.qty > 1) updateCartQty(item.variantId, -1); else removeFromCart(item.variantId); }} className="w-8 h-8 flex items-center justify-center text-gray-900 dark:text-white"><Minus className="w-4 h-4" /></button>
-                                                    <span className="w-4 text-center text-sm font-medium">{item.qty}</span>
-                                                    <button onClick={() => updateCartQty(item.variantId, 1)} className="w-8 h-8 flex items-center justify-center text-[#e21b70]"><Plus className="w-4 h-4" /></button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
 
                                     <hr className="border-gray-100 dark:border-gray-800" />
@@ -702,15 +826,25 @@ export default function POSPage() {
                             </div>
 
                             <div className="border-t border-b border-gray-200 py-4 space-y-3 mb-4">
-                                {receiptData.items.map((item: any) => (
-                                    <div key={item.variantId} className="flex justify-between text-sm">
-                                        <div>
-                                            <div className="font-medium">{item.nameKm}</div>
-                                            <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} ({item.size}, {item.color})</div>
+                                {receiptData.items.map((item: POSCartLine) => {
+                                    const key = getCartKey(item);
+                                    return (
+                                        <div key={key} className="flex justify-between text-sm">
+                                            <div>
+                                                <div className="font-medium flex items-center gap-1">
+                                                    {item.kind === "bundle" && <Package className="w-3 h-3 text-amber-500" />}
+                                                    {item.nameKm}
+                                                </div>
+                                                {item.kind === "product" ? (
+                                                    <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} ({item.size}, {item.color})</div>
+                                                ) : (
+                                                    <div className="text-gray-500 text-xs">{item.qty} x ${item.salePrice.toFixed(2)} [ឈុត]</div>
+                                                )}
+                                            </div>
+                                            <div className="font-medium">${(item.salePrice * item.qty).toFixed(2)}</div>
                                         </div>
-                                        <div className="font-medium">${(item.salePrice * item.qty).toFixed(2)}</div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             <div className="space-y-2 text-sm">

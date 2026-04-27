@@ -2,7 +2,7 @@ import ProductDetail from "@/components/Shop/ProductDetail/ProductDetail";
 import { ProductService } from "@/lib/services/productService";
 import { SettingsRepository } from "@/lib/repositories/settingsRepository";
 import React from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     try {
@@ -14,8 +14,14 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             notFound();
         }
 
+        // Bundles render via the dedicated /bundle/[id] route — components & pricing differ from regular products.
+        if (product.isBundle) {
+            redirect(`/bundle/${product.id}`);
+        }
+
         return <ProductDetail product={product as any} settings={settings} />;
     } catch (error) {
+        if ((error as { digest?: string })?.digest?.startsWith("NEXT_REDIRECT")) throw error;
         notFound();
     }
 }

@@ -1,6 +1,18 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
+const bundleComponentInclude = {
+    include: {
+        variant: {
+            include: {
+                product: {
+                    include: { images: { orderBy: { sortOrder: "asc" as const } } },
+                },
+            },
+        },
+    },
+} satisfies Prisma.Product$bundleComponentsArgs;
+
 export class ProductRepository {
     static async findAll() {
         return prisma.product.findMany({
@@ -8,7 +20,8 @@ export class ProductRepository {
             include: {
                 category: true,
                 images: true,
-                variants: true
+                variants: true,
+                bundleComponents: bundleComponentInclude,
             }
         });
     }
@@ -24,7 +37,8 @@ export class ProductRepository {
                 },
                 variants: {
                     where: { isActive: true }
-                }
+                },
+                bundleComponents: bundleComponentInclude,
             }
         });
     }
@@ -37,7 +51,8 @@ export class ProductRepository {
                 images: {
                     orderBy: { sortOrder: 'asc' }
                 },
-                variants: true
+                variants: true,
+                bundleComponents: bundleComponentInclude,
             }
         });
     }

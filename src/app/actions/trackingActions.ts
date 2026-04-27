@@ -32,11 +32,14 @@ export async function trackOrderAction(orderCode: string, phone: string) {
                 total: Number(order.total),
                 createdAt: order.createdAt.toISOString(),
                 items: order.items.map(i => ({
+                    id: i.id,
                     productNameSnapshot: i.productNameSnapshot,
                     qty: i.qty,
                     lineTotal: Number(i.lineTotal),
                     sizeSnapshot: i.sizeSnapshot,
                     colorSnapshot: i.colorSnapshot,
+                    parentItemId: i.parentItemId,
+                    isBundleParent: i.isBundleParent,
                 })),
             },
         };
