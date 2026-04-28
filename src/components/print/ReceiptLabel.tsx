@@ -220,11 +220,11 @@ export default function ReceiptLabel({
 
             {/* ── Note + item count ──────────────────────────── */}
             <div className="rl-note-row">
-                <div className="rl-note-text">
-                    {order.note
-                        ? <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ {order.note}</>
-                        : <><span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ </>}
-                </div>
+                {order.note && order.note.trim() ? (
+                    <div className="rl-note-text">
+                        <span className="rl-note-icon">✦</span> កំណត់សម្គាល់៖ {order.note}
+                    </div>
+                ) : null}
                 <div className="rl-note-count">{totalQty} items total</div>
             </div>
 
