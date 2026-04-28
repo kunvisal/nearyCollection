@@ -3,7 +3,7 @@ export const SHOP_INFO = {
     nameKm: "Neary Collection",
     phone: "097 833 8365",
     address: "ភ្នំពេញ កម្ពុជា",
-    logoPath: "/images/logo/neary-logo.svg",
+    logoPath: "/images/logo/neary-logo-black.svg",
 } as const;
 
 export type ShopInfo = typeof SHOP_INFO;

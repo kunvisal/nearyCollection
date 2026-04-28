@@ -143,10 +143,10 @@ export default function ReceiptLabel({
                         <div className="rl-ship-name">{shop.nameEn}</div>
                         <div className="rl-ship-phone">{shop.phone}</div>
                     </div>
-                    <div className="rl-ship-arrow" aria-hidden="true">→</div>
                     <div className="rl-ship-col rl-ship-col--right">
-                        <div className="rl-ship-label">អ្នកទទួល <span className="rl-sep">·</span> To</div>
-                        <div className="rl-ship-name">{order.customer.fullName}</div>
+                        <div className="rl-ship-name">
+                            <span className="rl-ship-label-inline">អ្នកទទួល :</span> {order.customer.fullName}
+                        </div>
                         <div className="rl-ship-phone">{order.customer.phone}</div>
                     </div>
                 </div>
