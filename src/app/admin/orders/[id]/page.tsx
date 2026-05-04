@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, XCircle, Package, Truck, CheckCircle2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ArrowLeft, CheckCircle, XCircle, Package, Truck, CheckCircle2, RotateCcw } from "lucide-react";
 import { formatCambodiaDate } from "@/lib/utils/timezone";
 import { OrderDetailSkeleton } from "@/components/skeletons/OrderDetailSkeleton";
 
@@ -16,10 +17,15 @@ export default function OrderDetailPage() {
     const params = useParams();
     const router = useRouter();
     const orderId = params.id as string;
+    const { data: session } = useSession();
+    const isAdmin = (session?.user as { role?: string } | undefined)?.role === "ADMIN";
 
     const [order, setOrder] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [revertOpen, setRevertOpen] = useState(false);
+    const [revertReason, setRevertReason] = useState("");
+    const [revertError, setRevertError] = useState<string | null>(null);
 
     const fetchOrder = async () => {
         try {
@@ -62,6 +68,36 @@ export default function OrderDetailPage() {
             }
         } catch (error) {
             console.error(error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleRevertSubmit = async () => {
+        setRevertError(null);
+        const trimmed = revertReason.trim();
+        if (trimmed.length < 3) {
+            setRevertError("Please enter a reason (at least 3 characters).");
+            return;
+        }
+        setIsUpdating(true);
+        try {
+            const res = await fetch(`/api/admin/orders/${orderId}/payment/revert`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reason: trimmed })
+            });
+            const json = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setRevertOpen(false);
+                setRevertReason("");
+                await fetchOrder();
+            } else {
+                setRevertError(json?.error || "Failed to revert payment.");
+            }
+        } catch (error) {
+            console.error(error);
+            setRevertError("Network error. Please try again.");
         } finally {
             setIsUpdating(false);
         }
@@ -292,7 +328,7 @@ export default function OrderDetailPage() {
                             <p className="text-sm text-gray-500 mb-1">Status</p>
                             <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' :
                                 order.paymentStatus === 'PENDING_VERIFICATION' ? 'bg-orange-100 text-orange-800' :
-                                    order.paymentStatus === 'FAILED' ? 'bg-red-100 text-red-800' :
+                                    order.paymentStatus === 'REJECTED' ? 'bg-red-100 text-red-800' :
                                         'bg-yellow-100 text-yellow-800'
                                 }`}>
                                 {order.paymentStatus.replace('_', ' ')}
@@ -331,11 +367,20 @@ export default function OrderDetailPage() {
                             )}
                             {order.paymentStatus === 'PENDING_VERIFICATION' && (
                                 <button
-                                    onClick={() => handlePaymentUpdate('FAILED')}
+                                    onClick={() => handlePaymentUpdate('REJECTED')}
                                     disabled={isUpdating}
                                     className="w-full bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50"
                                 >
                                     <XCircle className="w-4 h-4" /> Reject Slip
+                                </button>
+                            )}
+                            {isAdmin && order.paymentStatus === 'PAID' && order.orderStatus !== 'DELIVERED' && (
+                                <button
+                                    onClick={() => { setRevertReason(""); setRevertError(null); setRevertOpen(true); }}
+                                    disabled={isUpdating}
+                                    className="w-full bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50"
+                                >
+                                    <RotateCcw className="w-4 h-4" /> Revert to Unpaid
                                 </button>
                             )}
                         </div>
@@ -373,6 +418,54 @@ export default function OrderDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {revertOpen && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isUpdating && setRevertOpen(false)} />
+                    <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 flex items-center justify-center">
+                                <RotateCcw className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-gray-900 dark:text-white text-lg">Revert payment to Unpaid?</h3>
+                                <p className="text-xs text-gray-500">This will keep an audit note on the order.</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reason</label>
+                            <textarea
+                                value={revertReason}
+                                onChange={e => setRevertReason(e.target.value)}
+                                rows={3}
+                                maxLength={500}
+                                placeholder="e.g. Customer's bank transfer bounced, marked paid by mistake, ..."
+                                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:ring-2 focus:ring-[#e21b70] focus:border-transparent outline-none resize-none"
+                            />
+                            <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>{revertError && <span className="text-red-500">{revertError}</span>}</span>
+                                <span>{revertReason.length}/500</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={() => setRevertOpen(false)}
+                                disabled={isUpdating}
+                                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleRevertSubmit}
+                                disabled={isUpdating}
+                                className="flex-1 px-4 py-2 bg-[#e21b70] hover:bg-[#c2145e] text-white rounded-lg font-bold transition disabled:opacity-50"
+                            >
+                                {isUpdating ? "Reverting…" : "Confirm Revert"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

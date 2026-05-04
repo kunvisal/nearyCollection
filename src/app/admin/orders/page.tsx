@@ -105,8 +105,7 @@ export default function OrdersPage() {
             case 'UNPAID': return "bg-yellow-100 text-yellow-800";
             case 'PENDING_VERIFICATION': return "bg-orange-100 text-orange-800";
             case 'PAID': return "bg-green-100 text-green-800";
-            case 'FAILED': return "bg-red-100 text-red-800";
-            case 'REFUNDED': return "bg-gray-100 text-gray-800";
+            case 'REJECTED': return "bg-red-100 text-red-800";
             default: return "bg-gray-100 text-gray-800";
         }
     };
@@ -199,7 +198,7 @@ export default function OrdersPage() {
                         <option value="UNPAID">Unpaid</option>
                         <option value="PENDING_VERIFICATION">Pending Verification</option>
                         <option value="PAID">Paid</option>
-                        <option value="FAILED">Failed</option>
+                        <option value="REJECTED">Rejected</option>
                     </select>
                 </div>
 

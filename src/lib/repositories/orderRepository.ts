@@ -29,6 +29,7 @@ type OrderTxInput = {
     note?: string;
     discount?: number;
     isPOS?: boolean;
+    paymentStatus?: "PAID" | "UNPAID";
 };
 
 /**
@@ -309,7 +310,9 @@ export class OrderRepository {
                 // - PP zone: COD + JALAT only.
                 // - Province zone: ABA or WING + VET or JT.
                 // - POS orders skip NEW status and go straight to PROCESSING.
-                // - Province POS orders are also marked PAID immediately.
+                // - Payment status is staff-controlled (Paid/Unpaid toggle on the
+                //   Place Order button). If omitted, default per zone matches
+                //   prior behavior: Province=PAID (assumes pre-pay), PP=UNPAID (COD).
                 if (!orderData.deliveryService) {
                     throw new Error("Delivery service is required for POS orders.");
                 }
@@ -330,7 +333,12 @@ export class OrderRepository {
                     }
                 }
                 orderStatus = "PROCESSING";
-                if (orderData.deliveryZone === "PROVINCE") paymentStatus = "PAID";
+                paymentStatus = orderData.paymentStatus
+                    ?? (orderData.deliveryZone === "PROVINCE" ? "PAID" : "UNPAID");
+            } else if (orderData.paymentStatus) {
+                // Customer-facing checkout must never self-declare PAID — the only
+                // legitimate paths to PAID are admin slip-approval or delivery-completion.
+                throw new Error("paymentStatus override is only allowed for POS orders.");
             }
 
             // 3. Create order shell
@@ -625,6 +633,39 @@ export class OrderRepository {
         return prisma.order.update({
             where: { id },
             data: { paymentStatus: status },
+        });
+    }
+
+    /**
+     * Atomic PAID → UNPAID revert. Loads the row inside the transaction to guard
+     * against the order moving to DELIVERED between read and write. Reason is
+     * appended to `note` so the audit trail survives without a schema change.
+     */
+    static async revertPaymentToUnpaid(
+        id: string,
+        reason: string,
+        actor: { userId: string; name: string },
+        timestamp: Date,
+    ) {
+        return prisma.$transaction(async (tx) => {
+            const current = await tx.order.findUnique({
+                where: { id },
+                select: { paymentStatus: true, orderStatus: true, note: true, orderCode: true },
+            });
+            if (!current) throw new Error("Order not found");
+            if (current.paymentStatus !== "PAID") {
+                throw new Error("Only PAID orders can be reverted to UNPAID.");
+            }
+            if (current.orderStatus === "DELIVERED") {
+                throw new Error("Delivered orders cannot have their payment reverted.");
+            }
+            const stamp = timestamp.toISOString();
+            const auditLine = `[${stamp}] Payment reverted to UNPAID by ${actor.name} (${actor.userId}): ${reason}`;
+            const newNote = current.note ? `${current.note}\n${auditLine}` : auditLine;
+            return tx.order.update({
+                where: { id },
+                data: { paymentStatus: "UNPAID", note: newNote },
+            });
         });
     }
 }

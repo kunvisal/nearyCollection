@@ -14,6 +14,7 @@ type OrderInput = {
     note?: string;
     discount?: number;
     isPOS?: boolean;
+    paymentStatus?: "PAID" | "UNPAID";
 };
 
 export class OrderService {
@@ -103,6 +104,26 @@ export class OrderService {
             return await OrderRepository.updatePaymentStatus(id, status);
         } catch (error) {
             console.error(`Error updating payment ${id} status:`, error);
+            throw error;
+        }
+    }
+
+    static async revertPaymentToUnpaid(
+        id: string,
+        reason: string,
+        actor: { userId: string; name: string },
+    ) {
+        try {
+            const trimmed = reason?.trim() ?? "";
+            if (trimmed.length < 3) {
+                throw new Error("A reason of at least 3 characters is required to revert payment.");
+            }
+            if (trimmed.length > 500) {
+                throw new Error("Reason must be 500 characters or fewer.");
+            }
+            return await OrderRepository.revertPaymentToUnpaid(id, trimmed, actor, new Date());
+        } catch (error) {
+            console.error(`Error reverting payment ${id} to UNPAID:`, error);
             throw error;
         }
     }

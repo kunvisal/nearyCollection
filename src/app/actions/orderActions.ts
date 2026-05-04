@@ -3,6 +3,8 @@
 import { DeliveryService, DeliveryZone, PaymentMethod } from "@prisma/client";
 import { OrderService } from "@/lib/services/orderService";
 import type { OrderItemInput } from "@/lib/repositories/orderRepository";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth/authOptions";
 
 export async function createOrderAction(
     customerData: { fullName: string; phone: string },
@@ -17,9 +19,21 @@ export async function createOrderAction(
         note?: string;
         discount?: number;
         isPOS?: boolean;
+        paymentStatus?: "PAID" | "UNPAID";
     }
 ) {
     try {
+        // Server-side auth gate: isPOS and paymentStatus are staff-only inputs.
+        // Without this, a customer could spoof isPOS:true + paymentStatus:"PAID"
+        // and create a confirmed-paid order without ever paying.
+        if (orderData.isPOS === true || orderData.paymentStatus !== undefined) {
+            const session = await getServerSession(authOptions);
+            const role = (session?.user as { role?: string } | undefined)?.role;
+            if (role !== "ADMIN" && role !== "STAFF") {
+                return { success: false, error: "POS order creation requires staff authentication." };
+            }
+        }
+
         const order = await OrderService.createOrder(customerData, orderData);
         return {
             success: true,

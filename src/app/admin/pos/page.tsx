@@ -74,6 +74,7 @@ export default function POSPage() {
         note: "",
         discount: "",
         isFreeDelivery: false,
+        paymentStatus: "UNPAID" as "PAID" | "UNPAID",
     });
     const [receiptData, setReceiptData] = useState<any>(null);
 
@@ -285,6 +286,7 @@ export default function POSPage() {
                 deliveryZone: zone,
                 paymentMethod: "COD",
                 deliveryService: "JALAT",
+                paymentStatus: "UNPAID",
             }));
             return;
         }
@@ -294,6 +296,7 @@ export default function POSPage() {
             deliveryZone: zone,
             paymentMethod: prev.paymentMethod === "COD" ? "ABA" : prev.paymentMethod,
             deliveryService: prev.deliveryService === "JALAT" ? "VET" : prev.deliveryService,
+            paymentStatus: "PAID",
         }));
     };
 
@@ -324,6 +327,7 @@ export default function POSPage() {
                     note: formData.note,
                     discount: discountValue,
                     isPOS: true,
+                    paymentStatus: formData.paymentStatus,
                 }
             );
 
@@ -373,6 +377,7 @@ export default function POSPage() {
             note: "",
             discount: "",
             isFreeDelivery: false,
+            paymentStatus: "UNPAID",
         });
     };
 
@@ -390,6 +395,7 @@ export default function POSPage() {
             note: "",
             discount: "",
             isFreeDelivery: false,
+            paymentStatus: "UNPAID",
         });
     };
 
@@ -776,6 +782,25 @@ export default function POSPage() {
                                             <input type="checkbox" id="free-delivery" checked={formData.isFreeDelivery} onChange={e => setFormData({ ...formData, isFreeDelivery: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-[#e21b70] focus:ring-[#e21b70]" />
                                             <label htmlFor="free-delivery" className="flex-1 font-medium text-gray-900 dark:text-white text-[15px] cursor-pointer">Free Delivery (Shop pays)</label>
                                         </div>
+                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                                            <span className="font-medium text-gray-900 dark:text-white text-[15px]">Payment</span>
+                                            <div className="ml-auto inline-flex rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, paymentStatus: "PAID" })}
+                                                    className={`px-4 py-1.5 text-sm font-bold transition ${formData.paymentStatus === "PAID" ? "bg-[#e21b70] text-white" : "bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}
+                                                >
+                                                    Paid
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, paymentStatus: "UNPAID" })}
+                                                    className={`px-4 py-1.5 text-sm font-bold transition border-l border-gray-200 dark:border-gray-600 ${formData.paymentStatus === "UNPAID" ? "bg-[#e21b70] text-white" : "bg-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}
+                                                >
+                                                    Unpaid
+                                                </button>
+                                            </div>
+                                        </div>
                                         <div className="flex items-center gap-3">
                                             <div className="relative w-full">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
@@ -795,7 +820,9 @@ export default function POSPage() {
                             {/* Drawer Fixed Bottom Button */}
                             <div className="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] shrink-0 sm:rounded-b-3xl">
                                 <button form="pos-checkout-form" type="submit" disabled={isPending || cart.length === 0} className="w-full bg-[#e21b70] hover:bg-[#c2145e] disabled:opacity-50 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center transition-colors">
-                                    {isPending ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Confirming...</> : 'Place Order & Auto-Confirm'}
+                                    {isPending
+                                        ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Confirming...</>
+                                        : formData.paymentStatus === "PAID" ? 'Place Order & Mark Paid' : 'Place Order (Unpaid)'}
                                 </button>
                             </div>
                         </div>
