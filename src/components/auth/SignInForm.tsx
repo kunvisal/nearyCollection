@@ -35,7 +35,7 @@ export default function SignInForm() {
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push("/admin");
+        router.push("/admin/pos");
         router.refresh();
       }
     } catch (err) {
